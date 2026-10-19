@@ -265,7 +265,7 @@ mine → fetch → `python -m mapguard.features.build_store` → bundle. Copy `.
 `.env` first; OSMCha needs a free token.
 
 **Compute.** Training rounds 2–4 ran on an NVIDIA H100 GPU (a 40 GB slice) on the Altair HPC
-cluster ([altair/README.md](altair/README.md)); round 1 ran on an Apple M4 CPU. A full round
+cluster; round 1 ran on an Apple M4 CPU. A full round
 (all six tasks × 3 seeds, stacking and temporal evaluation) takes about 3.7 hours there. Every
 stage also runs on a CPU, more slowly.
 
