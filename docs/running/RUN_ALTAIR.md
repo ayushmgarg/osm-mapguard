@@ -5,6 +5,12 @@ single notebook and a `README.md` saying what it needs and what it produces. Not
 `cluster/` invents data — every notebook reads artefacts produced by the local fetchers
 under `src/mapguard/` and `scripts/`.
 
+Training rounds 2–4 did not use these notebooks. They used the zip, plan and job script in
+[`altair/`](../../altair/README.md):
+1. `altair/build_zip.py` packs the code, feature store and a step plan into one zip.
+2. On the cluster, `run_round2.sh` runs each plan line through `train/run_pipeline.py`.
+3. The job packs `<round>_results.zip`, which is extracted into `experiments/rounds/<round>/raw/`.
+
 ## The hardware
 
 | | |
@@ -63,7 +69,7 @@ this model uses them.
 - tensor ops are `tf.*`, never `keras.ops.*` (Keras 3 only)
 - no Keras-3-only layer keywords
 
-**`cluster/00_env_check` exists to prove that on the actual image before anything trains.**
+**`cluster/00_wiring_check` exists to prove that on the actual image before anything trains.**
 Run it first, every time the image changes. If it fails, the fix is to adjust
 `stage2.py`, not to pin a different Keras inside the notebook — the model has to keep
 working on both machines.
@@ -94,7 +100,7 @@ Bundles are gitignored. They are build artefacts, and they carry data.
 
 - **No secrets in a notebook.** The OSMCha token is only needed by the local fetchers.
   Nothing in `cluster/` should ever want it.
-- **Metrics go to `results/*.json`**, and every run records config, split, seed,
+- **Metrics go to `experiments/runs/<stage>/<run>/results.json`**, and every run records config, split, seed,
   checkpoint id, git SHA and data window. Download the results file; do not screenshot
   the output.
 - **Checkpoint every epoch.** A job that dies at hour six with nothing on disk is six
@@ -112,7 +118,7 @@ cluster, the M4 and any other machine run exactly the same code.
 | `00_wiring_check` | model builds, trains, masks, saves and transfers under this image's Keras | nothing - **run first, stop on FAIL** |
 | `01_baselines` | B0 tripwire, logistic regression, XGBoost; freezes the split | nothing |
 | `02_stage2_supervised` | the five-branch model on R1b, plus the Ovid reproduction (ovid task) | 01 |
-| `03_stage2_ablations` | seven rows x two seeds | 04 for row 07 |
+| `03_stage2_ablations` | 15 rows (`rows/`) x seeds | 04 for row 07 |
 | `04_stage1_pretrain` | corruption contrast + zero-shot transfer check | 01 |
 | `05_stage1_label_efficiency` | pretrained vs scratch at 10/25/50/100% of labels | 04 |
 | `06_temporal_evaluation` | train on the past, test on the future | 02 (reference, optional) |

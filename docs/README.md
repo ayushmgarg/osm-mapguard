@@ -1,7 +1,10 @@
 # Documentation
 
+New here? Start with the diagram and stage table in the [top-level README](../README.md).
+
 | Folder | Document | What it covers |
 |---|---|---|
+| `architecture/` | [README.md](architecture/README.md), [mapguard-pipeline.html](architecture/mapguard-pipeline.html) | the end-to-end pipeline diagram, its source JSON, and which code each box maps to |
 | `model/` | [MODEL_V2.md](model/MODEL_V2.md) | why the first model plateaued; who/what/text signals; author concentration; multiple-instance pooling |
 | | [MODEL_V3.md](model/MODEL_V3.md) | text embeddings, transformer blocks, stacking; what each round decided and why |
 | | [mapguard-architecture.html](model/mapguard-architecture.html) | architecture page |

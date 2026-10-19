@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "MapGuard: from OSM edits to a damage score",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1080,
+      620
+    ]
+  },
+  "stages": [
+    {
+      "label": "Sources"
+    },
+    {
+      "label": "Fetch + label"
+    },
+    {
+      "label": "Feature store"
+    },
+    {
+      "label": "Train"
+    },
+    {
+      "label": "Evaluate"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "osm_api",
+      "type": "external",
+      "label": "OSM API 0.6",
+      "sublabel": "edits, versions, users",
+      "stage": 0,
+      "row": 0,
+      "tag": "rate-limited"
+    },
+    {
+      "id": "ovid_labels",
+      "type": "database",
+      "label": "Ovid labels",
+      "sublabel": "data/labels/",
+      "stage": 0,
+      "row": 1,
+      "tag": "2014-19"
+    },
+    {
+      "id": "planet_dump",
+      "type": "external",
+      "label": "Planet dump",
+      "sublabel": "all changesets",
+      "stage": 0,
+      "row": 2,
+      "tag": "HTTP Range"
+    },
+    {
+      "id": "osmcha",
+      "type": "external",
+      "label": "OSMCha",
+      "sublabel": "human reviews",
+      "stage": 0,
+      "row": 3,
+      "tag": "token"
+    },
+    {
+      "id": "edit_fetch",
+      "type": "backend",
+      "label": "Edit fetchers",
+      "sublabel": "fetch_osm.py",
+      "stage": 1,
+      "row": 0,
+      "tag": "SQLite cache"
+    },
+    {
+      "id": "label_miners",
+      "type": "backend",
+      "label": "Label miners",
+      "sublabel": "mine_changesets.py",
+      "stage": 1,
+      "row": 2,
+      "tag": "SQLite cache"
+    },
+    {
+      "id": "feature_store",
+      "type": "database",
+      "label": "Feature store",
+      "sublabel": "3 parquet tables",
+      "stage": 2,
+      "row": 1,
+      "tag": "build_store"
+    },
+    {
+      "id": "release",
+      "type": "cloud",
+      "label": "Release zip",
+      "sublabel": "GitHub release",
+      "stage": 2,
+      "row": 3,
+      "tag": "pseudonymised"
+    },
+    {
+      "id": "hybrid",
+      "type": "backend",
+      "label": "Hybrid trees",
+      "sublabel": "XGBoost",
+      "stage": 3,
+      "row": 0,
+      "tag": "stage 01"
+    },
+    {
+      "id": "deep",
+      "type": "backend",
+      "label": "Deep MIL model",
+      "sublabel": "models/stage2.py",
+      "stage": 3,
+      "row": 2,
+      "tag": "stage 02"
+    },
+    {
+      "id": "stack",
+      "type": "backend",
+      "label": "Stack + blend",
+      "sublabel": "stages 07, 09",
+      "stage": 4,
+      "row": 1,
+      "tag": "final score"
+    },
+    {
+      "id": "scoring",
+      "type": "frontend",
+      "label": "Scoring",
+      "sublabel": "PR-AUC",
+      "stage": 4,
+      "row": 3,
+      "tag": "user-disjoint"
+    }
+  ],
+  "flows": [
+    {
+      "id": "api-to-fetch",
+      "from": "osm_api",
+      "to": "edit_fetch",
+      "label": "osmChange + history",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "ovid-to-fetch",
+      "from": "ovid_labels",
+      "to": "edit_fetch",
+      "label": "corpus A ids"
+    },
+    {
+      "id": "dump-to-miners",
+      "from": "planet_dump",
+      "to": "label_miners",
+      "label": "reverts",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "osmcha-to-miners",
+      "from": "osmcha",
+      "to": "label_miners",
+      "label": "harmful / cleared"
+    },
+    {
+      "id": "miners-to-fetch",
+      "from": "label_miners",
+      "to": "edit_fetch",
+      "label": "R, M, N ids"
+    },
+    {
+      "id": "fetch-to-store",
+      "from": "edit_fetch",
+      "to": "feature_store",
+      "label": "point-in-time",
+      "variant": "emphasis"
+    },
+    {
+      "id": "store-to-release",
+      "from": "feature_store",
+      "to": "release",
+      "label": "salted uids",
+      "variant": "dashed",
+      "labelAt": [
+        530,
+        314
+      ]
+    },
+    {
+      "id": "store-to-hybrid",
+      "from": "feature_store",
+      "to": "hybrid",
+      "label": "counts, tokens",
+      "variant": "emphasis"
+    },
+    {
+      "id": "store-to-deep",
+      "from": "feature_store",
+      "to": "deep",
+      "label": "edits, text",
+      "variant": "emphasis"
+    },
+    {
+      "id": "hybrid-to-stack",
+      "from": "hybrid",
+      "to": "stack",
+      "label": "tree score"
+    },
+    {
+      "id": "deep-to-stack",
+      "from": "deep",
+      "to": "stack",
+      "label": "OOF score",
+      "variant": "emphasis"
+    },
+    {
+      "id": "stack-to-scoring",
+      "from": "stack",
+      "to": "scoring",
+      "label": "test preds",
+      "labelAt": [
+        960,
+        314
+      ]
+    }
+  ]
+}
