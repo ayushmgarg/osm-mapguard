@@ -1,0 +1,5 @@
+# local Python environment and the downloaded dataset release (80 MB, ODbL) - never committed
+.venv/
+data/
+__pycache__/
+.claude/

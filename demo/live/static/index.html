@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MapGuard Live Map</title>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&family=Overpass+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: review desk on the left (modes, scenarios, the open changeset), map on the right with a legend and a status strip. */
+:root {
+  --paper: #f2f4f1; --sheet: #ffffff; --ink: #1b2827; --muted: #5a6866; --rule: #d4dbd7; --grid: #e6ebe8;
+  --bad: #c2412a; --bad-soft: #f6ddd6; --good: #1d7486; --good-soft: #d5eaef; --mark: #d99a1c; --mark-soft: #f7e7c4;
+  --create: #2e8b57; --modify: #3b6fb6; --delete: #b23a48; --old: #8a9693;
+  --f-body: "Overpass", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Overpass Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --paper: #111716; --sheet: #182120; --ink: #e2eae7; --muted: #95a4a1; --rule: #2c3836; --grid: #222c2a;
+  --bad: #f06d52; --bad-soft: #4a2219; --good: #52b6ca; --good-soft: #163840; --mark: #f0b43a; --mark-soft: #4a3a15;
+  --create: #5cc28b; --modify: #6f9ee6; --delete: #e2687a; --old: #7f8c89;
+  color-scheme: dark; } }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 14px/1.5 var(--f-body); }
+.app { display: grid; grid-template-columns: 430px minmax(0, 1fr); height: 100%; }
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; } .mapwrap { order: -1; min-height: 55vh; } }
+aside { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
+.head { padding: 14px 16px 12px; display: grid; gap: 10px; border-bottom: 1px solid var(--rule); }
+.titlerow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: 21px; font-weight: 800; line-height: 1.15; }
+.proto { font-family: var(--f-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--mark); border: 1px solid var(--mark); border-radius: 3px; padding: 1px 5px; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--sheet); }
+.tabs button { font: inherit; font-weight: 600; padding: 7px; border: 0; background: transparent; color: var(--ink); cursor: pointer; display: flex; gap: 8px; align-items: center; justify-content: center; }
+.tabs button + button { border-left: 1px solid var(--rule); }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+.tabs button[aria-pressed="true"] .dot { animation: blink 1.6s infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.scen { display: grid; gap: 6px; }
+.scen-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.scen button { display: grid; text-align: left; gap: 1px; font: inherit; font-size: 12px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink); cursor: pointer; min-width: 0; }
+.scen button b { font-size: 12px; }
+.scen button span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scen button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 -3px 0 var(--mark); }
+.scroll { overflow-y: auto; min-height: 0; flex: 1; display: grid; align-content: start; gap: 14px; padding: 14px 16px 24px; }
+.block { display: grid; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chipbtn { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); cursor: pointer; }
+.chipbtn[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.chipbtn .n { font-family: var(--f-mono); opacity: .75; margin-left: 4px; }
+select, input[type=range] { font: inherit; accent-color: var(--ink); }
+select { padding: 4px 6px; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); color: var(--ink); }
+button:focus-visible, select:focus-visible, input:focus-visible, .feed-item:focus-visible, .erow:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 8px; display: grid; }
+.stat b { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 11px; color: var(--muted); line-height: 1.3; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.mono { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.feed { display: grid; gap: 6px; }
+.feed-item { display: grid; grid-template-columns: 50px 1fr; gap: 8px; align-items: center; padding: 7px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); cursor: pointer; text-align: left; font: inherit; color: var(--ink); width: 100%; min-width: 0; }
+.feed-item.sel { border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); }
+.feed-item.new { animation: arrive 1.2s ease-out; }
+@keyframes arrive { from { background: var(--mark-soft); } }
+.sc { font-family: var(--f-mono); font-weight: 600; text-align: center; border-radius: 4px; padding: 2px 0; font-variant-numeric: tabular-nums; }
+.sc.bad { background: var(--bad-soft); color: var(--bad); } .sc.good { background: var(--good-soft); color: var(--good); }
+.fi-text { min-width: 0; display: grid; }
+.fi-text .c { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi-text .m { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+h3 { margin: 0; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+.card { display: grid; gap: 10px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+/* decision card */
+.decision { border-width: 2px; }
+.decision.flag { border-color: var(--bad); } .decision.clean { border-color: var(--good); }
+.verdict { display: flex; align-items: center; gap: 12px; }
+.verdict .big { font-family: var(--f-mono); font-size: 34px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.verdict .what { display: grid; gap: 2px; }
+.verdict .what b { font-size: 16px; }
+.decision.flag .verdict .big, .decision.flag .what b { color: var(--bad); }
+.decision.clean .verdict .big, .decision.clean .what b { color: var(--good); }
+.gauge { position: relative; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--good), var(--grid) 50%, var(--bad)); margin: 4px 0 0; }
+.gauge .needle { position: absolute; top: -5px; width: 3px; height: 18px; background: var(--ink); border-radius: 2px; transform: translateX(-1px); }
+.gauge .thr { position: absolute; top: -3px; width: 1px; height: 14px; background: var(--muted); }
+.pill { font-family: var(--f-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.bad { color: var(--bad); } .pill.good { color: var(--good); } .pill.muted { color: var(--muted); }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 0; font-size: 12px; }
+dt { color: var(--muted); } dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.ops { display: flex; gap: 6px; flex-wrap: wrap; }
+.op { font-family: var(--f-mono); font-size: 11px; padding: 1px 6px; border-radius: 3px; color: #fff; }
+.op.create { background: var(--create); } .op.modify { background: var(--modify); } .op.delete { background: var(--delete); }
+/* signal bars */
+.sig { display: grid; grid-template-columns: 128px 1fr 52px; gap: 8px; align-items: center; font-size: 12px; }
+.sig .track { position: relative; height: 12px; background: var(--grid); border-radius: 3px; }
+.sig .zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
+.sig .fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.sig .fill.up { left: 50%; background: var(--bad); } .sig .fill.down { right: 50%; background: var(--good); }
+.sig .v { font-family: var(--f-mono); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+/* ranked edits */
+.etools { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.etable { display: grid; gap: 3px; max-height: 340px; overflow-y: auto; }
+.erow { display: grid; grid-template-columns: 22px 62px 1fr 50px; gap: 6px; align-items: start; font-size: 12px; padding: 5px 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; background: transparent; text-align: left; font-family: inherit; color: inherit; width: 100%; }
+.erow:hover { background: var(--grid); }
+.erow.top { background: var(--mark-soft); }
+.erow.sel { border-color: var(--ink); }
+.erow .rk { font-family: var(--f-mono); color: var(--muted); }
+.erow .kind { display: grid; gap: 2px; }
+.erow .geo { font-family: var(--f-mono); font-size: 10px; color: var(--muted); }
+.erow .w { height: 6px; border-radius: 3px; background: var(--mark); align-self: center; justify-self: end; }
+.chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.chip { font-family: var(--f-mono); font-size: 11px; padding: 1px 5px; border-radius: 3px; background: var(--grid); overflow-wrap: anywhere; }
+.chip.bad { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+.chip.good { background: var(--good-soft); color: var(--good); font-weight: 600; }
+.txt { color: var(--muted); overflow-wrap: anywhere; font-size: 11px; }
+a { color: inherit; }
+/* map */
+.mapwrap { position: relative; min-height: 360px; }
+#map { position: absolute; inset: 0; background: var(--grid); }
+.leaflet-container { font: inherit; }
+.legend { background: var(--sheet); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; font-size: 11px; display: grid; gap: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+.legend b { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.lg { display: flex; align-items: center; gap: 7px; }
+.lg i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; }
+.lg i.dot { width: 10px; height: 10px; border: 0; border-radius: 50%; }
+.lg i.ring { width: 12px; height: 12px; border: 3px solid var(--mark); border-radius: 50%; }
+.status { position: absolute; left: 0; right: 0; bottom: 0; z-index: 800; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center;
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--sheet) 92%, transparent); border-top: 1px solid var(--rule); font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.status b { color: var(--ink); font-weight: 600; }
+.status .warn { color: var(--bad); font-weight: 600; }
+.status .ok { color: var(--good); font-weight: 600; }
+.leaflet-bottom { bottom: 30px; }
+.pulse { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--c); animation: pulse 1.8s ease-out 3; opacity: 0; }
+@keyframes pulse { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+.flash { animation: flash .9s ease-out 2; }
+@keyframes flash { 50% { opacity: .15; } }
+.empty { font-size: 13px; color: var(--muted); padding: 12px; border: 1px dashed var(--rule); border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { .pulse, .feed-item.new, .tabs .dot, .flash { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="head">
+    <div class="titlerow"><span class="eyebrow">MapGuard · OSM edit review</span><span class="proto" title="Scores rank a review queue; they are not a verdict on any person">research prototype</span></div>
+    <h1>Which edits look damaging?</h1>
+    <div class="tabs" role="group" aria-label="Mode">
+      <button type="button" id="tab-test" aria-pressed="true">Test set (replay)</button>
+      <button type="button" id="tab-live" aria-pressed="false"><span class="dot"></span>Live now</button>
+    </div>
+    <div class="scen">
+      <h3>Demo scenarios · real test changesets</h3>
+      <div class="scen-row" id="scenarios"></div>
+    </div>
+  </div>
+  <div class="scroll" id="side">
+    <div id="detail-box"></div>
+    <div class="block" id="test-ctl">
+      <h3>Test set</h3>
+      <div class="row">
+        <label for="model" class="note">Model</label>
+        <select id="model">
+          <option value="stack_emb">Final model (stack + embeddings)</option>
+          <option value="hybrid">Tree baseline</option>
+          <option value="deep">Deep network alone</option>
+        </select>
+        <label for="colorby" class="note">Colour by</label>
+        <select id="colorby"><option value="pred">model verdict</option><option value="truth">truth (was it reverted?)</option></select>
+      </div>
+      <div class="row" id="filters"></div>
+      <div class="stats" id="test-stats"></div>
+      <p class="note">3,607 held-out changesets from Ovid's 2014–2019 benchmark, by authors the model never trained on. Scores are the repo's real round-4 results (mean of 3 seeds); the threshold was chosen on validation.</p>
+    </div>
+    <div class="block" id="live-ctl" hidden>
+      <h3>Score any changeset</h3>
+      <form class="row" id="score-form" autocomplete="off">
+        <label for="score-cid" class="note" style="flex-basis:100%">Changeset id (from openstreetmap.org/changeset/…)</label>
+        <input id="score-cid" placeholder="id or link, e.g. 190804354" style="font:inherit;padding:5px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);color:var(--ink);flex:1;min-width:0">
+        <button type="submit" class="chipbtn" id="score-btn" style="border-radius:4px">Score</button>
+      </form>
+      <p class="note" id="score-msg" role="status"></p>
+      <h3>Live feed</h3>
+      <div class="row">
+        <label for="live-thr" class="note">Flag above</label>
+        <input id="live-thr" type="range" min="0.05" max="0.99" step="0.01">
+        <span class="mono" id="live-thr-v"></span>
+        <label class="note"><input type="checkbox" id="follow"> follow new edits</label>
+      </div>
+      <div class="stats" id="live-stats"></div>
+      <p class="note" id="live-note"></p>
+    </div>
+    <div class="block">
+      <h3 id="list-title">Changesets</h3>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+</aside>
+<div class="mapwrap">
+  <div id="map" role="region" aria-label="Map"></div>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+</div>
+</div>
+
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script>
+(() => {
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const C = () => ({ bad: css("--bad"), good: css("--good"), mark: css("--mark"), ink: css("--ink"), muted: css("--muted"),
+  create: css("--create"), modify: css("--modify"), delete: css("--delete"), old: css("--old") });
+
+// Real held-out test changesets picked for the demo script (VISUAL_PLAN.md section 2).
+const SCENARIOS = [
+  { cid: 73656923, title: "Clean edit", sub: "“added a service road”" },
+  { cid: 61155395, title: "Text / Pokémon GO", sub: "“i need this for pokemon go pls”" },
+  { cid: 25818789, title: "Geometry", sub: "a node dragged 762 m" },
+  { cid: 22578095, title: "Mass deletion", sub: "232 of 235 edits delete" },
+  { cid: 56564752, title: "Honest mistake", sub: "“Added missing footpath”" },
+];
+
+const map = L.map("map", { preferCanvas: true, worldCopyJump: true }).setView([30, 10], 2);
+const osmTiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+});
+// Fallback base map for offline use: a plain graticule drawn locally, so points and edits still
+// have a frame of reference when the tile server cannot be reached.
+const Graticule = L.GridLayer.extend({
+  createTile(coords) {
+    const c = document.createElement("canvas"); c.width = c.height = 256;
+    const g = c.getContext("2d");
+    g.fillStyle = css("--paper"); g.fillRect(0, 0, 256, 256);
+    g.strokeStyle = css("--rule"); g.lineWidth = 1; g.strokeRect(0.5, 0.5, 255, 255);
+    g.fillStyle = css("--muted"); g.font = "10px monospace";
+    const nw = map.unproject([coords.x * 256, coords.y * 256], coords.z);
+    g.fillText(`${nw.lat.toFixed(coords.z > 8 ? 3 : 1)}°, ${nw.lng.toFixed(coords.z > 8 ? 3 : 1)}°`, 4, 12);
+    return c;
+  },
+});
+const gridTiles = new Graticule({ maxZoom: 19, attribution: "offline base map (no tiles) · data © OpenStreetMap contributors" });
+let tileErrors = 0, usingGrid = false;
+function useGrid(reason) {
+  if (usingGrid) return;
+  usingGrid = true; map.removeLayer(osmTiles); gridTiles.addTo(map); state.mapNote = reason; renderStatus();
+}
+osmTiles.on("tileerror", () => { if (++tileErrors >= 6) useGrid("map tiles unavailable: plain grid shown"); });
+osmTiles.on("tileload", () => { tileErrors = 0; });
+const renderer = L.canvas({ padding: 0.5 });
+const testLayer = L.layerGroup().addTo(map);
+const liveLayer = L.layerGroup();
+const geomLayer = L.layerGroup().addTo(map);
+
+const legend = L.control({ position: "bottomleft" });
+legend.onAdd = () => {
+  const d = L.DomUtil.create("div", "legend");
+  d.innerHTML = `<b>Changesets</b>
+    <span class="lg"><i class="dot" style="background:var(--bad)"></i>flagged for review</span>
+    <span class="lg"><i class="dot" style="background:var(--good)"></i>looks clean</span>
+    <b style="margin-top:4px">Edits of the open changeset</b>
+    <span class="lg"><i style="border-color:var(--create)"></i>created</span>
+    <span class="lg"><i style="border-color:var(--modify)"></i>modified</span>
+    <span class="lg"><i style="border-color:var(--delete);border-top-style:dashed"></i>deleted</span>
+    <span class="lg"><i style="border-color:var(--old);border-top-style:dotted"></i>old position → new</span>
+    <span class="lg"><i class="ring"></i>top-ranked edit</span>`;
+  L.DomEvent.disableClickPropagation(d);
+  return d;
+};
+legend.addTo(map);
+
+const state = { mode: "test", model: "stack_emb", colorby: "pred", filter: "all", sel: null, d: null, order: "rank",
+                selEdit: null, test: null, live: new Map(), liveSeq: 0, liveThr: null, firstLive: true,
+                liveStatus: null, report: null, lastDetailMs: null, scenario: null, config: { offline: false },
+                mapNote: null };
+const editLayers = new Map();
+let TOK_BAD = new Set(), TOK_GOOD = new Set();
+
+// ------------------------------------------------------------------ scenarios
+function renderScenarios() {
+  $("scenarios").innerHTML = SCENARIOS.map((s) => `
+    <button type="button" data-cid="${s.cid}" aria-pressed="${state.scenario === s.cid}"><b>${esc(s.title)}</b><span>${esc(s.sub)}</span></button>`).join("");
+  $("scenarios").querySelectorAll("button").forEach((b) => b.onclick = () => {
+    const cid = +b.dataset.cid;
+    state.scenario = cid;
+    if (state.mode !== "test") setMode("test");
+    state.filter = "all"; drawTest();
+    openTest(cid); renderScenarios();
+  });
+}
+
+// ------------------------------------------------------------------ modes
+function setMode(m) {
+  state.mode = m;
+  $("tab-test").setAttribute("aria-pressed", m === "test");
+  $("tab-live").setAttribute("aria-pressed", m === "live");
+  $("test-ctl").hidden = m !== "test"; $("live-ctl").hidden = m !== "live";
+  if (m === "test") { map.removeLayer(liveLayer); testLayer.addTo(map); drawTest(); }
+  else { map.removeLayer(testLayer); liveLayer.addTo(map); drawLive(); if (state.live.size) fitLive(); state.scenario = null; renderScenarios(); }
+  geomLayer.clearLayers(); state.sel = null; state.d = null; $("detail-box").innerHTML = "";
+  renderList(); renderStatus();
+}
+$("tab-test").onclick = () => setMode("test");
+$("tab-live").onclick = () => setMode("live");
+
+// ------------------------------------------------------------------ test set
+function testClass(p) {
+  const s = p[4 + ["stack_emb", "hybrid", "deep"].indexOf(state.model)];
+  const flag = s >= state.test.meta.thresholds[state.model];
+  const y = p[3];
+  return { s, flag, y, kind: flag ? (y ? "caught" : "false alarm") : (y ? "missed" : "cleared") };
+}
+const FILTERS = [["all", "All"], ["caught", "Caught"], ["cleared", "Cleared"], ["false alarm", "False alarms"], ["missed", "Missed"]];
+
+function drawTest() {
+  if (!state.test) return;
+  testLayer.clearLayers();
+  const col = C(), counts = { all: 0, caught: 0, cleared: 0, "false alarm": 0, missed: 0 };
+  for (const p of state.test.points) {
+    const k = testClass(p);
+    counts.all++; counts[k.kind]++;
+    if (state.filter !== "all" && k.kind !== state.filter) continue;
+    const bad = state.colorby === "pred" ? k.flag : !!k.y;
+    L.circleMarker([p[1], p[2]], { renderer, radius: 4.5, weight: 1, color: col.ink, opacity: .35,
+      fillColor: bad ? col.bad : col.good, fillOpacity: .8 }).on("click", () => openTest(p[0])).addTo(testLayer);
+  }
+  $("filters").innerHTML = FILTERS.map(([k, label]) =>
+    `<button type="button" class="chipbtn" data-f="${k}" aria-pressed="${state.filter === k}">${label}<span class="n">${counts[k].toLocaleString()}</span></button>`).join("");
+  $("filters").querySelectorAll("button").forEach((b) => b.onclick = () => { state.filter = b.dataset.f; drawTest(); renderList(); });
+  const prec = counts.caught / Math.max(1, counts.caught + counts["false alarm"]);
+  const rec = counts.caught / Math.max(1, counts.caught + counts.missed);
+  const acc = (counts.caught + counts.cleared) / Math.max(1, counts.all);
+  $("test-stats").innerHTML = `
+    <div class="stat"><b>${(prec * 100).toFixed(1)}%</b><span>of flags were reverted</span></div>
+    <div class="stat"><b>${(rec * 100).toFixed(1)}%</b><span>of reverted edits caught</span></div>
+    <div class="stat"><b>${(acc * 100).toFixed(1)}%</b><span>accuracy (Ovid: 81.4%)</span></div>`;
+}
+$("model").onchange = (e) => { state.model = e.target.value; drawTest(); renderList(); if (state.sel && state.mode === "test") openTest(state.sel); };
+$("colorby").onchange = (e) => { state.colorby = e.target.value; drawTest(); };
+
+async function openTest(cid) {
+  state.sel = cid; renderList(true);
+  const t0 = performance.now();
+  const d = await (await fetch(`/api/test/${cid}`)).json();
+  state.lastDetailMs = Math.round(performance.now() - t0);
+  if (d.error) { showMessage(`Changeset ${cid}: ${d.error}.`, state.config.offline ? "Pick one of the demo scenarios above, or start the server without --offline." : ""); return; }
+  d.scoreShown = d.score[state.model]; d.thr = state.test.meta.thresholds[state.model];
+  if (state.model !== "stack_emb") d.model = { ...d.model, name: { hybrid: "Tree baseline (hybrid), round 4", deep: "Deep network v3 alone, round 4" }[state.model] };
+  showDetail(d); renderStatus();
+}
+
+// ------------------------------------------------------------------ live
+async function pollLive() {
+  try {
+    const r = await (await fetch(`/api/live?since=${state.liveSeq}`)).json();
+    state.liveStatus = r.status; state.report = r.report;
+    if (state.liveThr == null) {
+      const rep = r.report;
+      state.liveThr = rep.live_threshold ?? rep.threshold; $("live-thr").value = state.liveThr; $("live-thr-v").textContent = state.liveThr.toFixed(2);
+      const k = rep.live_threshold_catches || {};
+      $("live-note").innerHTML = `Each minute the server takes the newest closed changesets from the OSM API, rebuilds MapGuard's features for a few of them and scores them with the CPU live scorer (held-out PR-AUC ${rep.by_corpus.all.pr_auc}). The default threshold ${state.liveThr.toFixed(2)} flags 5% of random edits and catches about ${Math.round(100 * (k.R ?? 0))}% of edits that were later reverted. Live edits have no labels yet.`;
+    }
+    const fresh = [];
+    for (const it of r.items) { if (!state.live.has(it.cid)) fresh.push(it); state.live.set(it.cid, it); state.liveSeq = Math.max(state.liveSeq, it.seq); }
+    if (fresh.length) {
+      if (state.mode === "live") {
+        drawLive(fresh.map((x) => x.cid));
+        if (state.firstLive) fitLive();
+        if ($("follow").checked) { const n = fresh[fresh.length - 1]; map.flyTo([n.lat, n.lon], 13, { duration: 1.2 }); }
+      }
+      state.firstLive = false;
+      renderList(false, fresh.map((x) => x.cid));
+    }
+  } catch (e) { state.liveStatus = { state: "server not reachable", error: true }; }
+  renderStatus();
+  setTimeout(pollLive, 5000);
+}
+$("live-thr").oninput = (e) => { state.liveThr = +e.target.value; $("live-thr-v").textContent = state.liveThr.toFixed(2); drawLive(); renderList(); if (state.d && state.d.mode === "live") { state.d.thr = state.liveThr; showDetail(state.d, true); } };
+
+function drawLive(newCids = []) {
+  liveLayer.clearLayers();
+  const col = C(); let flagged = 0;
+  for (const it of state.live.values()) {
+    const bad = it.score.live >= state.liveThr; flagged += bad;
+    L.circleMarker([it.lat, it.lon], { renderer, radius: 7, weight: 1.5, color: col.ink, opacity: .6,
+      fillColor: bad ? col.bad : col.good, fillOpacity: .85 }).on("click", () => openLive(it.cid)).addTo(liveLayer);
+    if (newCids.includes(it.cid)) {
+      L.marker([it.lat, it.lon], { interactive: false, icon: L.divIcon({ className: "", iconSize: [18, 18],
+        html: `<div class="pulse" style="--c:${bad ? col.bad : col.good}"></div>` }) }).addTo(liveLayer);
+    }
+  }
+  const n = state.live.size;
+  $("live-stats").innerHTML = `
+    <div class="stat"><b>${n}</b><span>edits scored this session</span></div>
+    <div class="stat"><b style="color:var(--bad)">${flagged}</b><span>flagged at ${(state.liveThr ?? 0).toFixed(2)}</span></div>
+    <div class="stat"><b>${n ? Math.round(100 * flagged / n) : 0}%</b><span>flag rate</span></div>`;
+}
+function fitLive() {
+  const pts = [...state.live.values()].map((x) => [x.lat, x.lon]);
+  if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.2), { maxZoom: 4 });
+}
+function showMessage(title, hint) {
+  geomLayer.clearLayers(); state.d = null;
+  $("detail-box").innerHTML = `<div class="card"><b>${esc(title)}</b>${hint ? `<p class="note">${esc(hint)}</p>` : ""}</div>`;
+}
+
+$("score-form").onsubmit = async (ev) => {
+  ev.preventDefault();
+  const raw = $("score-cid").value.trim().replace(/^.*changeset\//, "");
+  const msg = $("score-msg");
+  if (!/^\d+$/.test(raw)) { msg.textContent = "Enter a changeset id: a whole number, or paste its openstreetmap.org link."; return; }
+  if (state.config.offline) { msg.textContent = "Offline mode: scoring a new changeset needs the OSM API. Restart the server without --offline."; return; }
+  $("score-btn").disabled = true;
+  msg.textContent = `Fetching changeset ${raw} from OpenStreetMap and scoring it… (usually 2–6 s)`;
+  const t0 = performance.now();
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 45000);
+  try {
+    const r = await fetch(`/api/score/${raw}`, { signal: ctl.signal });
+    const d = await r.json();
+    if (!r.ok || d.error) { msg.textContent = `Could not score ${raw}: ${d.error || "HTTP " + r.status}.`; return; }
+    state.live.set(d.cid, d); state.liveSeq = Math.max(state.liveSeq, d.seq || 0);
+    drawLive([d.cid]); renderList(false, [d.cid]);
+    msg.textContent = `Scored ${raw} in ${((performance.now() - t0) / 1000).toFixed(1)} s with the same code as live/score.py.`;
+    openLive(d.cid);
+  } catch (e) {
+    msg.textContent = e.name === "AbortError"
+      ? `No answer after 45 s: the OSM API is slow right now. Try again in a minute, or use a demo scenario.`
+      : "The server did not answer. Is live/server.py still running?";
+  } finally { clearTimeout(timer); $("score-btn").disabled = false; }
+};
+
+async function openLive(cid) {
+  state.sel = cid; renderList(true);
+  const t0 = performance.now();
+  const d = await (await fetch(`/api/live/${cid}`)).json();
+  state.lastDetailMs = Math.round(performance.now() - t0);
+  if (d.error) return;
+  d.scoreShown = d.score.live; d.thr = state.liveThr;
+  showDetail(d); renderStatus();
+}
+
+// ------------------------------------------------------------------ status strip
+function ago(sec) { return sec < 60 ? `${Math.round(sec)} s ago` : `${Math.round(sec / 60)} min ago`; }
+function renderStatus() {
+  const s = state.liveStatus || {};
+  const parts = [];
+  if (state.config.offline) parts.push(`<span class="warn">OFFLINE · committed fixtures, no network</span>`);
+  if (state.mapNote) parts.push(`<span class="warn">${esc(state.mapNote)}</span>`);
+  if (state.mode === "test") {
+    parts.push(`<span>mode <b>replay</b></span>`, `<span>source <b>${esc(state.config.replay_source || "saved round-4 scores")}</b></span>`);
+    if (state.lastDetailMs != null) parts.push(`<span>detail loaded in <b>${state.lastDetailMs} ms</b></span>`);
+  } else if (state.config.offline) {
+    parts.push(`<span>mode <b>live (recorded)</b></span>`, `<span><b>${state.live.size}</b> real changesets scored earlier by core.Engine, replayed from fixtures/live.json</span>`);
+  } else {
+    const age = s.last_poll_epoch ? Date.now() / 1000 - s.last_poll_epoch : null;
+    const stale = age != null && age > 180;
+    parts.push(`<span>mode <b>live</b></span>`, `<span>source <b>api.openstreetmap.org</b>, polled every 60 s</span>`);
+    parts.push(`<span>last poll <b>${s.last_poll ?? "–"}</b>${age != null ? ` (${ago(age)})` : ""}</span>`);
+    if (s.poll_ms != null) parts.push(`<span>request <b>${s.poll_ms} ms</b></span>`);
+    if (s.fetch_s != null) parts.push(`<span>fetch + features <b>${s.fetch_s} s</b></span>`);
+    if (s.score_ms != null) parts.push(`<span>scoring <b>${s.score_ms} ms</b></span>`);
+    parts.push(`<span>scored <b>${s.scored ?? 0}</b></span>`);
+    if (s.error) parts.push(`<span class="warn">server not reachable: is live/server.py running?</span>`);
+    else if (stale) parts.push(`<span class="warn">data may be stale: no poll for ${ago(age)}</span>`);
+    else if (s.last_error) parts.push(`<span title="${esc(s.last_error)}">last skip: ${esc(String(s.last_error).slice(0, 40))}…</span>`);
+    else parts.push(`<span class="ok">${esc(s.state ?? "starting")}</span>`);
+  }
+  $("status").innerHTML = parts.join("");
+}
+setInterval(renderStatus, 10000);
+
+// ------------------------------------------------------------------ list
+function renderList(keep = false, newCids = []) {
+  const feed = $("feed");
+  let items = [];
+  if (state.mode === "test" && state.test) {
+    const pts = state.test.points.map((p) => [p, testClass(p)]).filter(([, k]) => state.filter === "all" || k.kind === state.filter);
+    pts.sort((a, b) => b[1].s - a[1].s);
+    const pick = pts.length > 40 ? [...pts.slice(0, 20), ...pts.slice(-20)] : pts;
+    $("list-title").textContent = pts.length > 40 ? "Highest and lowest scores" : "Changesets";
+    items = pick.map(([p, k]) => ({ cid: p[0], s: k.s, bad: k.flag, c: `${k.kind} · ${p[3] ? "reverted" : "not reverted"}`, m: `changeset ${p[0]}` }));
+  } else if (state.mode === "live") {
+    $("list-title").textContent = "Live feed, newest first";
+    items = [...state.live.values()].reverse().map((it) => ({ cid: it.cid, s: it.score.live, bad: it.score.live >= state.liveThr,
+      c: it.comment || "(no comment)", m: `${it.recorded ? "recorded · " : it.requested ? "requested · " : ""}${it.editor || "unknown editor"} · ${it.n_edits} edits · closed ${(it.closed_at || "").slice(11, 16)} UTC` }));
+    if (!items.length) { feed.innerHTML = `<div class="empty">Waiting for the first scored edits. The server polls OpenStreetMap once a minute and scores a few changesets each time.</div>`; return; }
+  }
+  feed.innerHTML = items.map((x) => `
+    <button type="button" class="feed-item ${x.cid === state.sel ? "sel" : ""} ${newCids.includes(x.cid) ? "new" : ""}" data-cid="${x.cid}">
+      <span class="sc ${x.bad ? "bad" : "good"}">${x.s.toFixed(2)}</span>
+      <span class="fi-text"><span class="c">${esc(x.c)}</span><span class="m">${esc(x.m)}</span></span>
+    </button>`).join("");
+  feed.querySelectorAll(".feed-item").forEach((b) => b.onclick = () => {
+    const cid = +b.dataset.cid;
+    state.mode === "test" ? openTest(cid) : openLive(cid);
+  });
+}
+
+// ------------------------------------------------------------------ detail
+function chip(t) {
+  const cls = TOK_BAD.has(t) ? "bad" : TOK_GOOD.has(t) ? "good" : "";
+  return `<span class="chip ${cls}">${esc(t)}</span>`;
+}
+function rankValue(d, e) { return d.rank_by === "attention" ? (e.w ?? 0) : e.push; }
+
+function showDetail(d, keepMap = false) {
+  state.d = d;
+  const flagged = d.scoreShown >= d.thr;
+  const ops = d.ops || {};
+  const truth = d.mode === "test"
+    ? `<span class="pill ${d.label ? "bad" : "good"}">truth: ${d.label ? "was reverted" : "not reverted"}</span><span class="note">${flagged === !!d.label ? "model was right" : "model was wrong"}</span>`
+    : `<span class="pill muted">live: no label yet</span>`;
+  const calib = d.mode === "test"
+    ? "On the balanced test set 80% of flags at this threshold were reverted; at a realistic 1% vandalism rate that falls to about 4%."
+    : "At this threshold about 5% of ordinary edits get flagged, and about 60% of edits that were later reverted.";
+  const sig = d.signals;
+  const smax = sig ? Math.max(0.05, ...sig.bars.map((b) => Math.abs(b.delta))) : 1;
+  const sigHtml = sig ? sig.bars.map((b) => {
+    const w = Math.min(50, 50 * Math.abs(b.delta) / smax);
+    return `<div class="sig" title="${esc(b.what)}"><span>${esc(b.label)}</span>
+      <span class="track"><span class="zero"></span><span class="fill ${b.delta >= 0 ? "up" : "down"}" style="width:${w}%"></span></span>
+      <span class="v">${b.delta >= 0 ? "+" : "−"}${Math.abs(b.delta).toFixed(3)}</span></div>`;
+  }).join("") : `<p class="note">No signal breakdown for this changeset.</p>`;
+
+  const order = d.edits.map((e, i) => i);
+  const ranked = [...order].sort((a, b) => rankValue(d, d.edits[b]) - rankValue(d, d.edits[a]));
+  const top = ranked.length ? ranked[0] : -1;
+  const shown = state.order === "rank" ? ranked : order;
+  const maxv = Math.max(1e-9, ...d.edits.map((e) => Math.abs(rankValue(d, e))));
+  const rankOf = new Map(ranked.map((i, r) => [i, r + 1]));
+  const rankLabel = d.rank_by === "attention" ? "deep-model attention" : "how much its tokens push the score up";
+
+  $("detail-box").innerHTML = `
+    <div class="card decision ${flagged ? "flag" : "clean"}">
+      <div class="verdict">
+        <span class="big">${d.scoreShown.toFixed(3)}</span>
+        <span class="what"><b>${flagged ? "Flag for review" : "Looks clean"}</b><span class="note">score vs threshold ${d.thr.toFixed(2)}</span></span>
+      </div>
+      <div class="gauge" aria-hidden="true"><div class="thr" style="left:${d.thr * 100}%"></div><div class="needle" style="left:${d.scoreShown * 100}%"></div></div>
+      <div class="row">${truth}</div>
+      <p class="note">${calib}</p>
+      <dl>
+        <dt>Model</dt><dd>${esc(d.model?.name)}<br><span class="mono">${esc(d.model?.version)}</span></dd>
+        <dt>Scored</dt><dd>${esc(d.timing?.scored_at ? d.timing.scored_at + (d.recorded ? " (recorded, replayed offline)" : " (live)") : "saved by the round-4 training runs, 2026-10-13")}</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>What changed</h3>
+      <dl>
+        <dt>Comment</dt><dd>${esc(d.comment || "(none)")}</dd>
+        <dt>Editor</dt><dd>${esc(d.editor || "(unknown)")}</dd>
+        <dt>When</dt><dd>${esc((d.created_at || "").replace("T", " ").replace("Z", " UTC"))}</dd>
+        <dt>Edits</dt><dd><div class="ops"><span class="mono">${d.n_edits ?? d.edits.length}</span>
+          ${ops.create ? `<span class="op create">${ops.create} created</span>` : ""}${ops.modify ? `<span class="op modify">${ops.modify} modified</span>` : ""}${ops.delete ? `<span class="op delete">${ops.delete} deleted</span>` : ""}</div></dd>
+        <dt>Author</dt><dd>${d.user_n_prior ?? "?"}${d.user_history_capped || d.user_n_prior >= 100 ? "+" : ""} earlier changesets <span class="note">(no name or id shown)</span></dd>
+        <dt>Changeset</dt><dd><a href="https://www.openstreetmap.org/changeset/${d.cid}" target="_blank" rel="noopener">${d.cid} on openstreetmap.org ↗</a></dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>Why flagged · which signal moved the score</h3>
+      ${sigHtml}
+      <p class="note">${esc(sig?.method || "")}. Red pushes towards damaging, teal towards clean.</p>
+    </div>
+    <div class="card">
+      <div class="etools"><h3>Suspicious edits · ranked by ${esc(rankLabel)}</h3>
+        <div class="row"><button type="button" class="chipbtn" id="ord-rank" aria-pressed="${state.order === "rank"}">ranked</button><button type="button" class="chipbtn" id="ord-commit" aria-pressed="${state.order === "commit"}">commit order</button></div></div>
+      <div class="etable" id="etable">${shown.map((i) => {
+        const e = d.edits[i], v = rankValue(d, e);
+        return `<button type="button" class="erow ${i === top ? "top" : ""} ${i === state.selEdit ? "sel" : ""}" data-i="${i}">
+          <span class="rk">${rankOf.get(i)}</span>
+          <span class="kind"><span class="op ${e.a}">${e.a}</span><span class="geo">${esc(e.t)}${e.geo ? " · " + esc(e.geo) : ""}</span></span>
+          <span style="display:grid;gap:2px;min-width:0"><span class="chips">${e.tok.filter((t) => !/^(create|modify|delete)_/.test(t)).slice(0, 6).map(chip).join("") || '<span class="txt">no tag change</span>'}</span>
+            ${(e.old || e.new) ? `<span class="txt">${e.old ? `“${esc(e.old.slice(0, 60))}” → ` : ""}${e.new ? `“${esc(e.new.slice(0, 60))}”` : "(removed)"}</span>` : ""}</span>
+          <span class="w" style="width:${Math.max(3, 46 * Math.max(0, v) / maxv)}px" title="${d.rank_by === "attention" ? "attention" : "token push"} ${v.toFixed(3)}"></span>
+        </button>`; }).join("")}</div>
+      ${d.note ? `<p class="note">${esc(d.note)}</p>` : ""}
+    </div>`;
+  $("ord-rank").onclick = () => { state.order = "rank"; showDetail(d, true); };
+  $("ord-commit").onclick = () => { state.order = "commit"; showDetail(d, true); };
+  $("etable").querySelectorAll(".erow").forEach((el) => el.onclick = () => selectEdit(+el.dataset.i, true));
+  if (!keepMap) { state.selEdit = null; drawGeom(d, top); $("side").scrollTop = 0; }
+}
+
+function actionColor(a, col) { return a === "create" ? col.create : a === "delete" ? col.delete : col.modify; }
+
+function drawGeom(d, top) {
+  geomLayer.clearLayers(); editLayers.clear();
+  const col = C(), pts = [];
+  const add = (k, layer) => { if (!editLayers.has(k)) editLayers.set(k, []); editLayers.get(k).push(layer); layer.on("click", (ev) => { L.DomEvent.stopPropagation(ev); selectEdit(k, false); }); };
+  if (d.bbox) {
+    const b = [[d.bbox[0], d.bbox[1]], [d.bbox[2], d.bbox[3]]];
+    L.rectangle(b, { color: col.ink, weight: 1, dashArray: "4 4", fill: false, interactive: false }).addTo(geomLayer);
+    pts.push(...b);
+  }
+  for (const [k, line] of d.ways) {
+    const a = d.edits[k]?.a;
+    if (k === top) L.polyline(line, { color: col.mark, weight: 10, opacity: .55, interactive: false }).addTo(geomLayer);
+    add(k, L.polyline(line, { color: actionColor(a, col), weight: 3.5, dashArray: a === "delete" ? "6 5" : null }).addTo(geomLayer));
+    line.forEach((q) => pts.push(q));
+  }
+  for (const [k, la, lo, pla, plo] of d.nodes) {
+    const a = d.edits[k]?.a;
+    if (pla != null && (pla !== la || plo !== lo)) {
+      L.polyline([[pla, plo], [la, lo]], { color: col.old, weight: 2, dashArray: "2 4", interactive: false }).addTo(geomLayer);
+      L.circleMarker([pla, plo], { radius: 3, color: col.old, fillColor: col.old, fillOpacity: 1, weight: 1, interactive: false }).addTo(geomLayer);
+      pts.push([pla, plo]);
+    }
+    if (k === top) L.circleMarker([la, lo], { radius: 12, color: col.mark, weight: 4, fill: false, interactive: false }).addTo(geomLayer);
+    add(k, L.circleMarker([la, lo], { radius: 5, color: col.ink, weight: 1, fillColor: actionColor(a, col), fillOpacity: a === "delete" ? .35 : 1 })
+      .bindTooltip(`#${k + 1} ${a}: ${(d.edits[k]?.tok || []).slice(1, 5).join(" ")}`).addTo(geomLayer));
+    pts.push([la, lo]);
+  }
+  if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 18 });
+}
+
+function selectEdit(i, fromList) {
+  state.selEdit = i;
+  document.querySelectorAll("#etable .erow").forEach((el) => el.classList.toggle("sel", +el.dataset.i === i));
+  const row = document.querySelector(`#etable .erow[data-i="${i}"]`);
+  if (row && !fromList) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  const layers = editLayers.get(i) || [];
+  if (!layers.length) return;
+  const b = L.latLngBounds([]);
+  layers.forEach((l) => { b.extend(l.getBounds ? l.getBounds() : l.getLatLng()); });
+  if (fromList) map.fitBounds(b.pad(0.6), { maxZoom: 18 });
+  layers.forEach((l) => {
+    const el = l.getElement ? l.getElement() : null;
+    l.openTooltip?.();
+    const orig = { ...l.options };
+    l.setStyle?.({ weight: (orig.weight || 3) + 4, color: css("--mark") });
+    setTimeout(() => l.setStyle?.({ weight: orig.weight, color: orig.color }), 1400);
+  });
+}
+
+// ------------------------------------------------------------------ boot
+(async () => {
+  try { state.config = await (await fetch("/api/config")).json(); } catch (e) { /* keep defaults */ }
+  if (state.config.offline) {
+    useGrid("offline mode: no map tiles requested");
+    $("score-cid").disabled = true; $("score-btn").disabled = true;
+    $("score-msg").textContent = "Offline mode: scoring a new changeset needs the OSM API. The feed below replays real results recorded earlier.";
+  } else {
+    osmTiles.addTo(map);
+  }
+  renderScenarios(); renderStatus();
+  state.test = await (await fetch("/api/test")).json();
+  TOK_BAD = new Set(state.test.meta.tokens.damaging); TOK_GOOD = new Set(state.test.meta.tokens.benign);
+  drawTest(); renderList();
+  pollLive();
+})();
+})();
+</script>
+</body>
+</html>

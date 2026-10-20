@@ -1,0 +1,472 @@
+<title>MapGuard Edit Triage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&family=Overpass+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single review-desk column; the score histogram is the hero, the changeset explorer is the working area. */
+:root {
+  --paper: #f2f4f1; --sheet: #ffffff; --ink: #1b2827; --muted: #5a6866; --rule: #d4dbd7; --grid: #e6ebe8;
+  --bad: #c2412a; --bad-soft: #f6ddd6; --good: #1d7486; --good-soft: #d5eaef; --mark: #d99a1c; --mark-soft: #f7e7c4;
+  --f-display: "Overpass", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Overpass", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Overpass Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111716; --sheet: #182120; --ink: #e2eae7; --muted: #95a4a1; --rule: #2c3836; --grid: #222c2a;
+  --bad: #f06d52; --bad-soft: #4a2219; --good: #52b6ca; --good-soft: #163840; --mark: #f0b43a; --mark-soft: #4a3a15;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111716; --sheet: #182120; --ink: #e2eae7; --muted: #95a4a1; --rule: #2c3836; --grid: #222c2a;
+  --bad: #f06d52; --bad-soft: #4a2219; --good: #52b6ca; --good-soft: #163840; --mark: #f0b43a; --mark-soft: #4a3a15;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; }
+h2 { font-size: 22px; font-weight: 800; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 16px; padding-block: 36px; border-top: 1px solid var(--rule); }
+section:first-of-type { border-top: 0; }
+header.top { display: grid; gap: 12px; padding-bottom: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.sw.bad { background: var(--bad); } .sw.good { background: var(--good); } .sw.mark { background: var(--mark); }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--sheet); }
+.seg button { font: inherit; font-size: 13px; padding: 6px 12px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+button:focus-visible, input:focus-visible, .ex:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.slider { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+input[type=range] { width: min(260px, 60vw); accent-color: var(--ink); }
+
+/* histogram */
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; min-width: 0; }
+.hist-wrap { overflow-x: auto; }
+svg text { fill: var(--muted); font-family: var(--f-mono); font-size: 11px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { display: grid; gap: 2px; }
+.stat .v { font-family: var(--f-mono); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.confusion { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px; font-size: 13px; max-width: 420px; }
+.confusion div { padding: 8px 10px; border-radius: 4px; }
+.confusion .h { color: var(--muted); font-size: 12px; padding: 4px 6px; }
+.cell { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.cell.tp { background: var(--bad-soft); } .cell.tn { background: var(--good-soft); }
+.cell.fp, .cell.fn { background: var(--grid); }
+.two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+.note { font-size: 13px; color: var(--muted); }
+
+/* explorer */
+.explorer { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 820px) { .explorer { grid-template-columns: 1fr; } }
+.ex-list { display: grid; gap: 14px; }
+.ex-group { display: grid; gap: 6px; }
+.ex-group h3 { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.ex { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: center; text-align: left; font: inherit; font-size: 13px;
+  padding: 7px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink); cursor: pointer; min-width: 0; }
+.ex[aria-selected="true"] { border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); }
+.ex .sc { font-family: var(--f-mono); font-weight: 600; font-variant-numeric: tabular-nums; text-align: center; border-radius: 4px; padding: 2px 0; }
+.ex .cm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.detail { display: grid; gap: 14px; min-width: 0; }
+.verdict { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.pill { font-family: var(--f-mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.bad { color: var(--bad); } .pill.good { color: var(--good); }
+.gauge { position: relative; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--good) 0%, var(--grid) 50%, var(--bad) 100%); }
+.gauge .needle { position: absolute; top: -5px; width: 3px; height: 20px; background: var(--ink); border-radius: 2px; transform: translateX(-1px); }
+.gauge .thr { position: absolute; top: -3px; width: 1px; height: 16px; background: var(--muted); }
+.scoreline { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 13px; }
+.meta-grid { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 13px; }
+.meta-grid dt { color: var(--muted); } .meta-grid dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.map-edits { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 980px) { .map-edits { grid-template-columns: 1fr; } }
+.map svg { width: 100%; height: auto; display: block; background: var(--paper); border-radius: 6px; }
+.edits { display: grid; gap: 4px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+.edit { display: grid; grid-template-columns: 28px 1fr 46px; gap: 8px; align-items: start; font-size: 12px; padding: 5px 6px; border-radius: 4px; }
+.edit.top { background: var(--mark-soft); }
+.edit .ix { font-family: var(--f-mono); color: var(--muted); }
+.edit .w { height: 6px; border-radius: 3px; background: var(--mark); align-self: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.chip { font-family: var(--f-mono); font-size: 11px; padding: 1px 5px; border-radius: 3px; background: var(--grid); color: var(--ink); overflow-wrap: anywhere; }
+.chip.bad { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+.chip.good { background: var(--good-soft); color: var(--good); font-weight: 600; }
+.chip.act { background: transparent; border: 1px solid var(--rule); color: var(--muted); }
+.txt { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* learned */
+.tok-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .tok-cols { grid-template-columns: 1fr; } }
+.tok-cols ol { margin: 0; padding-left: 22px; display: grid; gap: 3px; font-family: var(--f-mono); font-size: 13px; }
+.bars { display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: 150px 1fr 60px; gap: 10px; align-items: center; font-size: 13px; }
+@media (max-width: 520px) { .bar { grid-template-columns: 110px 1fr 52px; } }
+.bar .track { height: 12px; background: var(--grid); border-radius: 3px; position: relative; overflow: hidden; }
+.bar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); border-radius: 3px; }
+.bar .fill.pos { background: var(--bad); } .bar .fill.neg { background: var(--good); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; }
+td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+th.n { text-align: right; }
+.tbl { overflow-x: auto; }
+.gain { color: var(--bad); font-weight: 600; }
+footer { font-size: 12px; color: var(--muted); display: grid; gap: 6px; padding-top: 24px; border-top: 1px solid var(--rule); }
+a { color: inherit; }
+@media (prefers-reduced-motion: no-preference) { .gauge .needle, .bar .fill { transition: left .25s, width .25s; } }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">OpenStreetMap · damaging-edit detection</div>
+  <h1>Which map edits get reverted?</h1>
+  <p>MapGuard scores each OpenStreetMap changeset (one upload of edits) for how likely it is to be damaging. Every number below comes from the held-out test set of Ovid's 2014–2019 benchmark: <span class="num" id="n-test"></span> changesets by authors the model never saw in training, scored by the round-4 models (mean of 3 seeds).</p>
+  <div class="legend"><span><span class="sw bad"></span>Damaging (was reverted)</span><span><span class="sw good"></span>Clean (not reverted)</span><span><span class="sw mark"></span>Edit the deep model attended to most</span></div>
+</header>
+
+<section id="separation">
+  <div class="eyebrow">1 · The separation</div>
+  <h2>Damaging and clean changesets land at opposite ends of the score</h2>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Model" id="model-seg"></div>
+    <div class="seg" role="group" aria-label="Prevalence" id="prev-seg">
+      <button type="button" data-p="0.5" aria-pressed="true">Balanced test set</button>
+      <button type="button" data-p="0.01">Real world (1% damaging)</button>
+    </div>
+  </div>
+  <div class="two">
+    <div class="panel">
+      <div class="hist-wrap"><svg id="hist" viewBox="0 0 640 320" role="img" aria-label="Histogram of model scores, damaging above the axis, clean below"></svg></div>
+      <div class="slider"><label for="thr">Flag above</label><input id="thr" type="range" min="0.01" max="0.99" step="0.01"><span class="num" id="thr-v"></span><button type="button" class="seg-like" id="thr-reset" style="font:inherit;font-size:12px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:4px;padding:3px 8px;cursor:pointer">Reset to validation choice</button></div>
+    </div>
+    <div class="panel" style="display:grid;gap:16px;align-content:start">
+      <div class="stats">
+        <div class="stat"><span class="v" id="s-prec"></span><span class="k">Precision: flagged edits that are damaging</span></div>
+        <div class="stat"><span class="v" id="s-rec"></span><span class="k">Recall: damaging edits caught</span></div>
+        <div class="stat"><span class="v" id="s-f1"></span><span class="k" id="s-f1-k">F1</span></div>
+        <div class="stat"><span class="v" id="s-auc"></span><span class="k">PR-AUC (threshold-free)</span></div>
+      </div>
+      <div class="confusion" id="confusion"></div>
+      <p class="note" id="prev-note"></p>
+    </div>
+  </div>
+</section>
+
+<section id="explorer">
+  <div class="eyebrow">2 · Real changesets</div>
+  <h2>Open a changeset and see what the model saw</h2>
+  <p class="muted">Each example is a real test changeset, fetched from the public OSM API: what each edit did as tokens (<span class="num">+leisure=park</span> means a park tag was added), where it was, and how much attention the deep model paid to each edit. Tokens the tree model ranks among the 20 most damaging are red, the 20 most benign are teal.</p>
+  <div class="explorer">
+    <div class="ex-list" id="ex-list"></div>
+    <div class="detail panel" id="detail"></div>
+  </div>
+</section>
+
+<section id="learned">
+  <div class="eyebrow">3 · What it learned</div>
+  <h2>The edit itself carries the signal</h2>
+  <div class="tok-cols">
+    <div class="panel"><h3 style="color:var(--bad)">Most damaging edit tokens</h3><p class="note" style="margin:4px 0 10px">Fake parks and paths (the documented Pokémon Go pattern), invented major roads, deleted landmarks.</p><ol id="tok-bad"></ol></div>
+    <div class="panel"><h3 style="color:var(--good)">Most benign edit tokens</h3><p class="note" style="margin:4px 0 10px">The habits of careful mappers: sources, surfaces, access and service roads.</p><ol id="tok-good"></ol></div>
+  </div>
+  <div class="two">
+    <div class="panel" style="display:grid;gap:12px">
+      <h3>Which signal moves the score (deep model, occlusion)</h3>
+      <p class="note">Mean change in score when one input is removed, on the test set. Red: removing it lowers the score of damaging changesets.</p>
+      <div class="bars" id="attr"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:12px">
+      <h3>Adding one branch at a time (deep model, PR-AUC)</h3>
+      <p class="note">Round 2c ablations, 2 seeds each. Edit meaning and text pay; geometry and edit order add almost nothing.</p>
+      <div class="bars" id="abl"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tasks">
+  <div class="eyebrow">4 · Every task</div>
+  <h2>Against the tree baseline and against Ovid</h2>
+  <div class="panel tbl"><table id="task-table"></table></div>
+  <p class="note">PR-AUC on each task's user-disjoint test set, mean of 3 seeds. Gain is the best model minus the tree baseline (XGBoost on account, count and text features). On Ovid's own protocol the stack reaches F1 0.828 and accuracy 0.823, against Ovid's published 0.817 and 0.814.</p>
+</section>
+
+<footer>
+  <span>Source: github.com/ayushmgarg/osm-mapguard, experiments/rounds/r4_2026-10-13_altair_h100_seeds (scores, attention, seeds.json) and r2c (ablations). Example changesets re-fetched from api.openstreetmap.org; author names and ids are not shown.</span>
+  <span>Map data © OpenStreetMap contributors, ODbL 1.0. A revert is not always vandalism: the clean/damaging labels are Ovid's revert-derived benchmark labels.</span>
+</footer>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(() => {
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = (id) => document.getElementById(id);
+const fmt = (v, d = 3) => (v == null || isNaN(v)) ? "–" : v.toFixed(d);
+const pct = (v) => (v == null || isNaN(v)) ? "–" : (v * 100).toFixed(1) + "%";
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const NS = "http://www.w3.org/2000/svg";
+
+const MODELS = {
+  stack_emb: "Final model (stack + embeddings)",
+  hybrid: "Tree baseline (hybrid)",
+  deep: "Deep network alone",
+};
+const y = D.scores.y;
+const nPos = y.reduce((a, b) => a + b, 0), nNeg = y.length - nPos;
+$("n-test").textContent = y.length.toLocaleString();
+const state = { model: "stack_emb", prev: 0.5, thr: D.scores.models.stack_emb.threshold };
+
+// ---------- separation ----------
+const seg = $("model-seg");
+for (const [k, label] of Object.entries(MODELS)) {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.m = k; b.textContent = label;
+  b.setAttribute("aria-pressed", k === state.model);
+  b.onclick = () => { state.model = k; state.thr = D.scores.models[k].threshold; syncButtons(); render(); };
+  seg.appendChild(b);
+}
+$("prev-seg").querySelectorAll("button").forEach((b) => b.onclick = () => { state.prev = +b.dataset.p; syncButtons(); render(); });
+function syncButtons() {
+  seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.m === state.model));
+  $("prev-seg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.p === state.prev));
+}
+const thr = $("thr");
+thr.oninput = () => { state.thr = +thr.value; render(); };
+$("thr-reset").onclick = () => { state.thr = D.scores.models[state.model].threshold; render(); };
+
+function weights() { return ((1 - state.prev) / state.prev) * (nPos / nNeg); }
+
+function prAuc(p, w) {
+  const idx = p.map((_, i) => i).sort((a, b) => p[b] - p[a]);
+  let tp = 0, fp = 0, area = 0, prevR = 0;
+  for (const i of idx) {
+    if (y[i]) tp += 1; else fp += w;
+    const r = tp / nPos;
+    if (y[i]) { area += (tp / (tp + fp)) * (r - prevR); prevR = r; }
+  }
+  return area;
+}
+const aucCache = {};
+
+function render() {
+  const p = D.scores.models[state.model].p;
+  const w = weights();
+  thr.value = state.thr; $("thr-v").textContent = state.thr.toFixed(2);
+  let tp = 0, fp = 0, fn = 0, tn = 0;
+  p.forEach((s, i) => { const f = s >= state.thr; if (y[i]) f ? tp++ : fn++; else f ? fp++ : tn++; });
+  const prec = tp / Math.max(1e-9, tp + w * fp), rec = tp / Math.max(1, tp + fn);
+  const f1 = 2 * prec * rec / Math.max(1e-9, prec + rec);
+  $("s-prec").textContent = pct(prec); $("s-rec").textContent = pct(rec);
+  $("s-f1").textContent = fmt(f1);
+  $("s-f1-k").textContent = state.prev === 0.5 ? "F1 (Ovid published: 0.817)" : "F1 at 1% prevalence";
+  const key = state.model + state.prev;
+  aucCache[key] ??= prAuc(p, w);
+  $("s-auc").textContent = fmt(aucCache[key]);
+  const wl = state.prev === 0.5 ? "" : ` <span class="muted">(×${w.toFixed(0)})</span>`;
+  $("confusion").innerHTML = `
+    <div></div><div class="h">Flagged</div><div class="h">Not flagged</div>
+    <div class="h">Damaging</div><div class="cell tp">${tp.toLocaleString()} caught</div><div class="cell fn">${fn.toLocaleString()} missed</div>
+    <div class="h">Clean</div><div class="cell fp">${fp.toLocaleString()} false alarms${wl}</div><div class="cell tn">${tn.toLocaleString()} cleared${wl}</div>`;
+  $("prev-note").innerHTML = state.prev === 0.5
+    ? `The test set is half damaging by construction, as in Ovid's benchmark. The threshold <span class="num">${D.scores.models[state.model].threshold.toFixed(3)}</span> was chosen on the validation set, never on test.`
+    : `Real vandalism is well under 1% of edits. Each clean changeset here stands for ${w.toFixed(0)} clean ones. Recall does not change, but most flags become false alarms. MapGuard ranks a review queue; it does not replace the reviewer.`;
+  drawHist(p);
+}
+
+function drawHist(p) {
+  const svg = $("hist"); svg.innerHTML = "";
+  const W = 640, H = 320, L = 44, R = 12, T = 18, B = 34, mid = T + (H - T - B) / 2;
+  const bins = 40, cb = new Array(bins).fill(0), cg = new Array(bins).fill(0);
+  p.forEach((s, i) => { const b = Math.min(bins - 1, Math.floor(s * bins)); y[i] ? cb[b]++ : cg[b]++; });
+  const max = Math.max(...cb, ...cg);
+  const half = (H - T - B) / 2, x = (v) => L + v * (W - L - R), bw = (W - L - R) / bins;
+  const sc = (c) => Math.sqrt(c / max) * (half - 4);   // square-root scale so the middle stays visible
+  const el = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
+  for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+    el("line", { x1: x(v), x2: x(v), y1: T, y2: H - B, stroke: "var(--grid)" });
+    el("text", { x: x(v), y: H - B + 16, "text-anchor": "middle" }).textContent = v.toFixed(2);
+  }
+  el("text", { x: (L + W - R) / 2, y: H - 4, "text-anchor": "middle" }).textContent = "model score  (0 = clean, 1 = damaging)";
+  for (let b = 0; b < bins; b++) {
+    if (cb[b]) el("rect", { x: x(b / bins) + 1, y: mid - sc(cb[b]), width: bw - 2, height: sc(cb[b]), fill: "var(--bad)", rx: 1 });
+    if (cg[b]) el("rect", { x: x(b / bins) + 1, y: mid, width: bw - 2, height: sc(cg[b]), fill: "var(--good)", rx: 1 });
+  }
+  el("line", { x1: L, x2: W - R, y1: mid, y2: mid, stroke: "var(--ink)", "stroke-width": 1 });
+  for (const c of [max, Math.round(max / 4)]) {
+    el("text", { x: L - 6, y: mid - sc(c) + 4, "text-anchor": "end" }).textContent = c;
+    el("text", { x: L - 6, y: mid + sc(c) + 4, "text-anchor": "end" }).textContent = c;
+  }
+  el("text", { x: L + 4, y: T + 2 }).textContent = `damaging · ${nPos.toLocaleString()}`;
+  el("text", { x: L + 4, y: H - B - 6 }).textContent = `clean · ${nNeg.toLocaleString()}`;
+  const tx = x(state.thr);
+  el("rect", { x: tx, y: T, width: W - R - tx, height: H - T - B, fill: "var(--bad)", opacity: 0.06 });
+  el("line", { x1: tx, x2: tx, y1: T - 6, y2: H - B, stroke: "var(--ink)", "stroke-width": 2, "stroke-dasharray": "4 3" });
+  el("text", { x: Math.min(tx + 6, W - 70), y: T + 2, "font-weight": 600 }).textContent = "flagged →";
+}
+
+// ---------- explorer ----------
+const TOK_BAD = new Set(D.summary.tokens.damaging), TOK_GOOD = new Set(D.summary.tokens.benign);
+const GROUPS = [
+  ["tp", "Flagged, and it was reverted", "bad"],
+  ["tn", "Cleared, and it was fine", "good"],
+  ["fp", "Mistake: flagged, but never reverted", "bad"],
+  ["fn", "Mistake: missed, but it was reverted", "good"],
+];
+const list = $("ex-list");
+let current = null;
+for (const [g, title] of GROUPS) {
+  const items = D.examples.filter((e) => e.group === g);
+  if (!items.length) continue;
+  const box = document.createElement("div"); box.className = "ex-group";
+  box.innerHTML = `<h3><span class="sw ${items[0].label ? "bad" : "good"}"></span>${title}</h3>`;
+  for (const e of items) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "ex"; b.id = "ex-" + e.cid;
+    const s = e.score.stack_emb;
+    b.innerHTML = `<span class="sc" style="background:${s >= 0.5 ? "var(--bad-soft)" : "var(--good-soft)"};color:${s >= 0.5 ? "var(--bad)" : "var(--good)"}">${s.toFixed(2)}</span><span class="cm">${esc(e.comment || "(no comment)")}</span>`;
+    b.onclick = () => show(e);
+    box.appendChild(b);
+  }
+  list.appendChild(box);
+}
+
+function chip(t) {
+  let base = t.replace(/^[+~-]/, "");
+  const cls = TOK_BAD.has(t) ? "bad" : TOK_GOOD.has(t) ? "good" : /^(create|modify|delete)_/.test(t) ? "act" : "";
+  return `<span class="chip ${cls}">${esc(t)}</span>`;
+}
+
+function show(e) {
+  if (current) $("ex-" + current).setAttribute("aria-selected", "false");
+  current = e.cid; $("ex-" + e.cid).setAttribute("aria-selected", "true");
+  const thrv = D.scores.models.stack_emb.threshold, s = e.score.stack_emb;
+  const flagged = s >= thrv;
+  const top = e.edits.reduce((bi, ed, i, a) => ed.w > a[bi].w ? i : bi, 0);
+  const maxw = Math.max(...e.edits.map((d) => d.w), 1e-9);
+  const right = flagged === !!e.label;
+  $("detail").innerHTML = `
+    <div class="verdict">
+      <span class="pill ${e.label ? "bad" : "good"}">Truth: ${e.label ? "reverted" : "not reverted"}</span>
+      <span class="pill ${flagged ? "bad" : "good"}">Model: ${flagged ? "flag for review" : "clear"}</span>
+      <span class="muted" style="font-size:13px">${right ? "correct" : "wrong"}</span>
+    </div>
+    <div style="display:grid;gap:8px">
+      <div class="gauge" aria-label="score ${s.toFixed(3)}"><div class="thr" style="left:${thrv * 100}%"></div><div class="needle" style="left:${s * 100}%"></div></div>
+      <div class="scoreline">
+        <span>Final model <b class="num">${e.score.stack_emb.toFixed(3)}</b></span>
+        <span class="muted">Trees <span class="num">${e.score.hybrid.toFixed(3)}</span></span>
+        <span class="muted">Deep <span class="num">${e.score.deep.toFixed(3)}</span></span>
+        <span class="muted">Flag above <span class="num">${thrv.toFixed(3)}</span></span>
+      </div>
+    </div>
+    <dl class="meta-grid">
+      <dt>Comment</dt><dd>${esc(e.comment || "(none)")}</dd>
+      <dt>Editor</dt><dd>${esc(e.editor || "(unknown)")}</dd>
+      <dt>Created</dt><dd class="num">${esc((e.created_at || "").replace("T", " ").replace("Z", " UTC"))}</dd>
+      <dt>Edits</dt><dd class="num">${e.n_edits}</dd>
+      <dt>Changeset</dt><dd><a href="https://www.openstreetmap.org/changeset/${e.cid}" target="_blank" rel="noopener" class="num">${e.cid}</a></dd>
+    </dl>
+    <div class="map-edits">
+      <div class="map">${mapSvg(e, top)}<p class="note" style="margin-top:6px">Ink: created or modified · dashed: deleted · thin line: node moved from its old position · ring: most-attended edit.</p></div>
+      <div class="edits">${e.edits.map((d, i) => `
+        <div class="edit ${i === top ? "top" : ""}">
+          <span class="ix">${i + 1}</span>
+          <div style="display:grid;gap:3px;min-width:0">
+            <div class="chips">${d.tok.map(chip).join("")}</div>
+            ${(d.old || d.new) ? `<div class="txt">${d.old ? `“${esc(d.old)}” → ` : ""}${d.new ? `“${esc(d.new)}”` : (d.old ? "(removed)" : "")}</div>` : ""}
+          </div>
+          <span class="w" style="width:${Math.max(6, 46 * d.w / maxw)}px" title="attention ${d.w.toFixed(3)}"></span>
+        </div>`).join("")}</div>
+    </div>`;
+}
+
+function mapSvg(e, top) {
+  const pts = [];
+  e.nodes.forEach((n) => { pts.push([n[1], n[2]]); if (n[3] != null) pts.push([n[3], n[4]]); });
+  e.ways.forEach((w) => w[1].forEach((q) => pts.push(q)));
+  if (!pts.length) return `<p class="note">No coordinates available for this changeset.</p>`;
+  const W = 460, H = 320, P = 26;
+  let la0 = Math.min(...pts.map((q) => q[0])), la1 = Math.max(...pts.map((q) => q[0]));
+  let lo0 = Math.min(...pts.map((q) => q[1])), lo1 = Math.max(...pts.map((q) => q[1]));
+  const k = Math.cos(((la0 + la1) / 2) * Math.PI / 180);
+  let sx = (lo1 - lo0) * k, sy = la1 - la0;
+  const span = Math.max(sx, sy, 0.0005);
+  const s = Math.min((W - 2 * P) / Math.max(sx, span * 0.2), (H - 2 * P) / Math.max(sy, span * 0.2));
+  const cx = (lo0 + lo1) / 2, cy = (la0 + la1) / 2;
+  const X = (lo) => W / 2 + (lo - cx) * k * s, Y = (la) => H / 2 - (la - cy) * s;
+  const action = (i) => e.edits[i]?.a;
+  let out = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Edits of changeset ${e.cid}">`;
+  // scale bar in metres
+  const mPerPx = 111320 / s;
+  const nice = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000].find((m) => m / mPerPx > 60) || 100000;
+  const bl = nice / mPerPx;
+  out += `<line x1="${P}" x2="${P + bl}" y1="${H - 12}" y2="${H - 12}" stroke="var(--muted)" stroke-width="2"/><text x="${P}" y="${H - 18}">${nice >= 1000 ? nice / 1000 + " km" : nice + " m"}</text>`;
+  for (const w of e.ways) {
+    const d = w[1].map((q, j) => (j ? "L" : "M") + X(q[1]).toFixed(1) + " " + Y(q[0]).toFixed(1)).join(" ");
+    const del = action(w[0]) === "delete";
+    if (w[0] === top) out += `<path d="${d}" fill="none" stroke="var(--mark)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>`;
+    out += `<path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.8" ${del ? 'stroke-dasharray="4 3" opacity=".6"' : ""} stroke-linejoin="round"/>`;
+  }
+  for (const n of e.nodes) {
+    const x = X(n[2]), yy = Y(n[1]);
+    if (n[3] != null && (n[3] !== n[1] || n[4] !== n[2])) {
+      out += `<line x1="${X(n[4]).toFixed(1)}" y1="${Y(n[3]).toFixed(1)}" x2="${x.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="var(--muted)" stroke-width="1"/>`;
+      out += `<circle cx="${X(n[4]).toFixed(1)}" cy="${Y(n[3]).toFixed(1)}" r="2" fill="var(--muted)"/>`;
+    }
+    const del = action(n[0]) === "delete";
+    if (n[0] === top) out += `<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="9" fill="none" stroke="var(--mark)" stroke-width="3"/>`;
+    out += `<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${e.edits[n[0]]?.tok.length > 1 ? 3.6 : 2.2}" fill="${del ? "var(--paper)" : "var(--ink)"}" stroke="var(--ink)" stroke-width="1"/>`;
+  }
+  return out + "</svg>";
+}
+
+// ---------- learned ----------
+$("tok-bad").innerHTML = D.summary.tokens.damaging.slice(0, 12).map((t) => `<li>${esc(t)}</li>`).join("");
+$("tok-good").innerHTML = D.summary.tokens.benign.slice(0, 12).map((t) => `<li>${esc(t)}</li>`).join("");
+const BR = { B5: "Account & counts", B2: "Comment & tag text", B4: "Author history", B6: "Edit meaning", B1: "Geometry", B3: "Edit order" };
+const attr = D.summary.attribution;
+const am = Math.max(...Object.values(attr).map((v) => v.mean_abs_delta));
+$("attr").innerHTML = Object.entries(attr).sort((a, b) => b[1].mean_abs_delta - a[1].mean_abs_delta).map(([k, v]) => `
+  <div class="bar"><span>${BR[k]}</span><span class="track"><span class="fill ${v.mean_delta_positives > 0 ? "pos" : "neg"}" style="width:${100 * v.mean_abs_delta / am}%"></span></span><span class="num">${v.mean_abs_delta.toFixed(3)}</span></div>`).join("");
+const ABL = D.ablation;
+const lo = 0.84, hi = Math.max(...ABL.map((r) => r[1])) + 0.004;
+$("abl").innerHTML = ABL.map(([name, v]) => `
+  <div class="bar"><span>${name}</span><span class="track"><span class="fill ${name.startsWith("Base") ? "" : "pos"}" style="width:${100 * (v - lo) / (hi - lo)}%"></span></span><span class="num">${v.toFixed(3)}</span></div>`).join("");
+
+// ---------- tasks ----------
+const TASKS = [
+  ["ovid", "Ovid benchmark", "reverted, 2014–19"],
+  ["ovid_modern", "Ovid rule, old + new", "2014–19 and 2021–26"],
+  ["revert_vandalism", "Reverted for vandalism", "2021–26"],
+  ["revert", "Any revert", "2021–26"],
+  ["T1", "Human review: triage", "OSMCha, harmful vs cleared"],
+  ["T2", "Human review: detection", "OSMCha harmful vs random"],
+];
+const NAMES = { hybrid: "trees", hybrid_emb: "trees + emb", deep: "deep", ensemble: "ensemble", stack_base: "stack", stack_emb: "stack + emb" };
+let rows = `<tr><th>Task</th><th>Labels</th><th class="n">Test</th><th class="n">Tree baseline</th><th>Best model</th><th class="n">PR-AUC</th><th class="n">Gain</th></tr>`;
+for (const [t, name, lab] of TASKS) {
+  const v = D.summary.tasks[t]; if (!v) continue;
+  let best = null;
+  for (const m in NAMES) if (v[m] && (!best || v[m].pr_auc > v[best].pr_auc)) best = m;
+  const g = v[best].pr_auc - v.hybrid.pr_auc;
+  const ci = v._vs_hybrid[best]?.ci95;
+  const sig = ci && ci[0] > 0;
+  rows += `<tr><td>${name}</td><td class="muted">${lab}</td><td class="n">${v._n_test.toLocaleString()}</td><td class="n">${v.hybrid.pr_auc.toFixed(3)}</td><td>${NAMES[best]}</td><td class="n"><b>${v[best].pr_auc.toFixed(3)}</b></td><td class="n ${sig ? "gain" : "muted"}">+${g.toFixed(3)}${sig ? "" : "*"}</td></tr>`;
+}
+$("task-table").innerHTML = rows + `<tr><td colspan="7" class="note">* the 95% author-bootstrap interval includes zero. "Best" is picked on test score, so small gains are slightly optimistic.</td></tr>`;
+
+render();
+const first = D.examples.find((e) => e.group === "tp");
+if (first) show(first);
+})();
+</script>
