@@ -1,0 +1,99 @@
+{
+ "rows": 42633,
+ "train": 29843,
+ "val": 4263,
+ "test": 8527,
+ "threshold": 0.4361,
+ "val_f1": 0.8122,
+ "tabular_columns": [
+  "n_edits",
+  "n_create",
+  "n_modify",
+  "n_delete",
+  "frac_delete",
+  "n_node",
+  "n_way",
+  "n_relation",
+  "max_version",
+  "mean_version",
+  "n_v1",
+  "total_tags",
+  "mean_tags",
+  "distinct_keys",
+  "n_text_edits",
+  "sample_ratio",
+  "comment_length",
+  "text_chars",
+  "bbox_lat_span",
+  "bbox_lon_span",
+  "frac_edits_prev_version",
+  "user_history_known",
+  "geom_n_geom_actions",
+  "geom_max_centroid_shift_m",
+  "geom_p95_centroid_shift_m",
+  "geom_max_hausdorff_m",
+  "geom_n_deleted",
+  "geom_n_created",
+  "user_n_prior",
+  "user_days_since_prev",
+  "user_days_active_span",
+  "user_changesets_per_active_day",
+  "user_mean_prior_changes",
+  "user_max_prior_changes",
+  "user_distinct_editors",
+  "user_frac_prior_with_comment",
+  "user_max_bbox_diag_deg",
+  "user_history_truncated",
+  "user_active_weeks",
+  "n_prev_authors",
+  "imagery_used"
+ ],
+ "by_corpus": {
+  "A": {
+   "n": 3069,
+   "positive_rate": 0.374,
+   "pr_auc": 0.8401,
+   "roc_auc": 0.8882,
+   "one_per_author_pr_auc": 0.798,
+   "flag_rate": 0.472,
+   "accuracy": 0.7895
+  },
+  "R": {
+   "n": 3718,
+   "positive_rate": 0.536,
+   "pr_auc": 0.9216,
+   "roc_auc": 0.9105,
+   "one_per_author_pr_auc": 0.9008,
+   "flag_rate": 0.546,
+   "accuracy": 0.8297
+  },
+  "M": {
+   "n": 970,
+   "positive_rate": 1.0,
+   "flag_rate": 0.775,
+   "accuracy": 0.7753
+  },
+  "N": {
+   "n": 770,
+   "positive_rate": 0.0,
+   "flag_rate": 0.212,
+   "accuracy": 0.7883
+  },
+  "all": {
+   "n": 8527,
+   "positive_rate": 0.482,
+   "pr_auc": 0.8836,
+   "roc_auc": 0.8889,
+   "one_per_author_pr_auc": 0.856,
+   "flag_rate": 0.515,
+   "accuracy": 0.8053
+  }
+ },
+ "live_threshold": 0.8683,
+ "live_threshold_rule": "flags 5% of random edits (corpus N) in the user-disjoint test fold",
+ "live_threshold_catches": {
+  "A": 0.62,
+  "R": 0.6,
+  "M": 0.438
+ }
+}
