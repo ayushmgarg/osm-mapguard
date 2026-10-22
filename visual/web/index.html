@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapGuard review console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <h1>MapGuard</h1>
+  <nav class="modes" aria-label="What to look at">
+    <button data-mode="scenarios" aria-pressed="true">Scenarios</button>
+    <button data-mode="replay" aria-pressed="false">Test set</button>
+    <button data-mode="live" aria-pressed="false">Score a changeset</button>
+    <button data-mode="feed" aria-pressed="false">Live feed</button>
+  </nav>
+</header>
+
+<div class="layout">
+  <aside class="picker" id="picker" aria-label="Choose a changeset"></aside>
+
+  <main id="main">
+    <section class="maps" aria-label="The edit on the map and on satellite imagery">
+      <figure class="map-frame">
+        <div id="map-osm" class="map"></div>
+        <figcaption>
+          <span class="key before">before</span>
+          <span class="key after">after</span>
+          <span class="key focus">selected edit</span>
+          OpenStreetMap
+        </figcaption>
+      </figure>
+      <figure class="map-frame">
+        <div id="map-sat" class="map"></div>
+        <figcaption>
+          Satellite imagery: is the feature really there?
+          <a id="gmaps" target="_blank" rel="noopener">Open in Google Maps</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="detail" class="detail">
+      <p class="empty">Pick a scenario on the left to see how MapGuard judged it.</p>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

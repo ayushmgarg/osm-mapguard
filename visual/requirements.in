@@ -1,0 +1,7 @@
+numpy
+pandas
+pyarrow
+requests
+scikit-learn
+xgboost
+pytest
