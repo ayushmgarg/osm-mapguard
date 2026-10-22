@@ -97,7 +97,7 @@ def parse_changeset_list(xml: str) -> list[PriorChangeset]:
 
 
 def fetch_user_history(
-    session: PoliteSession, uid: int, before: str
+    session: PoliteSession, uid: int, before: str, api: str = OSM_API
 ) -> tuple[list[PriorChangeset], int]:
     """Changesets by `uid` closed before `before`, newest first, capped at 100.
 
@@ -107,7 +107,7 @@ def fetch_user_history(
     place to put a correctness guarantee this important.
     """
     r = session.get(
-        f"{OSM_API}/changesets",
+        f"{api}/changesets",
         params={"user": uid, "time": f"2005-01-01T00:00:00Z,{before}", "limit": HISTORY_LIMIT},
     )
     if not r.ok:

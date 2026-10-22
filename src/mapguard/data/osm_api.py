@@ -119,14 +119,16 @@ def _meta_from_element(el) -> ChangesetMeta:
     )
 
 
-def fetch_changeset_meta(session: PoliteSession, cid: int) -> tuple[ChangesetMeta | None, Response]:
-    r = session.get(f"{OSM_API}/changeset/{cid}")
+def fetch_changeset_meta(
+    session: PoliteSession, cid: int, api: str = OSM_API
+) -> tuple[ChangesetMeta | None, Response]:
+    r = session.get(f"{api}/changeset/{cid}")
     return (parse_changeset_meta(r.text) if r.ok else None), r
 
 
-def fetch_changeset_download(session: PoliteSession, cid: int) -> Response:
+def fetch_changeset_download(session: PoliteSession, cid: int, api: str = OSM_API) -> Response:
     """The osmChange document. Parsed by mapguard.data.osmchange."""
-    return session.get(f"{OSM_API}/changeset/{cid}/download")
+    return session.get(f"{api}/changeset/{cid}/download")
 
 
 def _chunks(seq: list, n: int):
@@ -138,6 +140,7 @@ def fetch_versioned(
     session: PoliteSession,
     otype: str,
     refs: list[tuple[int, int]],
+    api: str = OSM_API,
 ) -> dict[tuple[int, int], ET.Element]:
     """Fetch specific (id, version) states in batches of up to 725.
 
@@ -152,7 +155,7 @@ def fetch_versioned(
 
     for batch in _chunks(wanted, MULTIFETCH_MAX):
         param = ",".join(f"{i}v{v}" for i, v in batch)
-        r = session.get(f"{OSM_API}/{plural}", params={plural: param})
+        r = session.get(f"{api}/{plural}", params={plural: param})
         if not r.ok:
             continue
         try:
