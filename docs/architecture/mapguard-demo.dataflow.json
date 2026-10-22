@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "MapGuard demo: replay and live scoring on a laptop",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1080,
+      620
+    ],
+    "legend": {
+      "entries": {
+        "dashed": {
+          "label": "test or display only"
+        },
+        "emphasis": {
+          "label": "main data path"
+        }
+      }
+    }
+  },
+  "stages": [
+    {
+      "label": "Inputs"
+    },
+    {
+      "label": "Build once"
+    },
+    {
+      "label": "Serve on 127.0.0.1"
+    },
+    {
+      "label": "Browser"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "round4",
+      "type": "database",
+      "label": "Round 4 runs",
+      "sublabel": "experiments/rounds/r4",
+      "stage": 0,
+      "row": 0,
+      "tag": "8 models x 3 seeds"
+    },
+    {
+      "id": "release",
+      "type": "cloud",
+      "label": "Release v1.1.0",
+      "sublabel": "feature store",
+      "stage": 0,
+      "row": 1,
+      "tag": "pseudonymised"
+    },
+    {
+      "id": "osm_api",
+      "type": "external",
+      "label": "OSM API",
+      "sublabel": "real map",
+      "stage": 0,
+      "row": 2,
+      "tag": "4 req/s"
+    },
+    {
+      "id": "sandbox",
+      "type": "external",
+      "label": "OSM sandbox",
+      "sublabel": "test edits",
+      "stage": 0,
+      "row": 3,
+      "tag": "dev API"
+    },
+    {
+      "id": "export",
+      "type": "backend",
+      "label": "export_demo.py",
+      "sublabel": "seed means, attention",
+      "stage": 1,
+      "row": 0,
+      "tag": "checks PR-AUC"
+    },
+    {
+      "id": "tree",
+      "type": "backend",
+      "label": "tree_model.py",
+      "sublabel": "refit hybrid",
+      "stage": 1,
+      "row": 1,
+      "tag": "CPU, no TF"
+    },
+    {
+      "id": "live",
+      "type": "backend",
+      "label": "osm_live.py",
+      "sublabel": "build_store features",
+      "stage": 1,
+      "row": 2,
+      "tag": "per request"
+    },
+    {
+      "id": "data",
+      "type": "database",
+      "label": "visual/data",
+      "sublabel": "parquet + geometry",
+      "stage": 2,
+      "row": 0,
+      "tag": "git-ignored"
+    },
+    {
+      "id": "server",
+      "type": "backend",
+      "label": "server.py",
+      "sublabel": "replay, live, feed",
+      "stage": 2,
+      "row": 1,
+      "tag": "stdlib HTTP"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "Review console",
+      "sublabel": "web/app.js + Leaflet",
+      "stage": 3,
+      "row": 1,
+      "tag": "maps, verdict"
+    },
+    {
+      "id": "imagery",
+      "type": "external",
+      "label": "Esri imagery",
+      "sublabel": "satellite tiles",
+      "stage": 3,
+      "row": 3,
+      "tag": "display only"
+    }
+  ],
+  "flows": [
+    {
+      "id": "runs-to-export",
+      "from": "round4",
+      "to": "export",
+      "label": "stored scores",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "release-to-tree",
+      "from": "release",
+      "to": "tree",
+      "label": "same split + seed",
+      "route": "straight"
+    },
+    {
+      "id": "api-to-live",
+      "from": "osm_api",
+      "to": "live",
+      "label": "osmChange + history",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "sandbox-to-live",
+      "from": "sandbox",
+      "to": "live",
+      "label": "test changeset",
+      "variant": "dashed"
+    },
+    {
+      "id": "export-to-data",
+      "from": "export",
+      "to": "data",
+      "label": "test set",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "data-to-server",
+      "from": "data",
+      "to": "server",
+      "label": "replay rows",
+      "labelDy": 24
+    },
+    {
+      "id": "tree-to-server",
+      "from": "tree",
+      "to": "server",
+      "label": "model bundle",
+      "route": "straight"
+    },
+    {
+      "id": "live-to-server",
+      "from": "live",
+      "to": "server",
+      "label": "features + shapes"
+    },
+    {
+      "id": "server-to-page",
+      "from": "server",
+      "to": "page",
+      "label": "JSON /api",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "imagery-to-page",
+      "from": "imagery",
+      "to": "page",
+      "label": "tiles",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Replay",
+      "items": [
+        "Round 4's stored scores, mean of 3 seeds",
+        "Tests: served score equals stored output"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Live",
+      "items": [
+        "Training feature builder, same code path",
+        "Refit trees: test PR-AUC within 0.002"
+      ]
+    }
+  ]
+}
