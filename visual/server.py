@@ -5,6 +5,7 @@ run the tree model; nothing here needs TensorFlow. Standard-library HTTP server:
 six read-only routes, and a framework would be the largest dependency in the demo.
 
     python visual/server.py            # http://127.0.0.1:8765
+    python visual/server.py --offline  # no network: replay and recorded maps only
 
 Routes (all GET):
     /api/config                      tasks, models, thresholds, scenarios
@@ -12,6 +13,7 @@ Routes (all GET):
     /api/replay/<task>/<cid>         one stored changeset: every model's score, why, edits, map
     /api/live/<osm|sandbox>/<cid>    fetch a changeset now and score it with the tree model
     /api/feed                        the newest real changesets, scored as they close
+    /api/metrics/<task>              overview: outcome counts and round 4's multi-seed summary
 """
 
 from __future__ import annotations
@@ -49,6 +51,27 @@ FEED_KEEP = 40
 FEED_IDLE_STOP_SECONDS = 300
 
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
+ROUND4 = tree_model.REPO / "experiments/rounds/r4_2026-10-13_altair_h100_seeds"
+# Ovid (2021), as published - the reference line on the overview.
+OVID_PUBLISHED = {"precision": 0.8035, "recall": 0.8302, "f1": 0.8166, "accuracy": 0.8137}
+# --offline: no network at all. Replay answers from exported data and the geometry cache;
+# live scoring and the feed say clearly that they are off. The fallback if the room's
+# network fails.
+OFFLINE = False
+
+
+def google_maps_key() -> str | None:
+    """GOOGLE_MAPS_API_KEY from the environment or visual/.env (git-ignored). Never committed;
+    served only to this laptop's own page (the Host check below)."""
+    import os
+    if os.environ.get("GOOGLE_MAPS_API_KEY"):
+        return os.environ["GOOGLE_MAPS_API_KEY"].strip()
+    env = tree_model.VISUAL / ".env"
+    if env.exists():
+        for line in env.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("GOOGLE_MAPS_API_KEY="):
+                return line.split("=", 1)[1].strip().strip('"') or None
+    return None
 
 session = PoliteSession(OSM_RATE)
 
@@ -69,14 +92,41 @@ class Replay:
         self.changesets = pd.read_parquet(root / "changesets.parquet").set_index("cid")
         edits = pd.read_parquet(root / "edits.parquet")
         self.edits = {cid: frame for cid, frame in edits.groupby("cid")}
+        # one map point per changeset for the overview: the median of its edits' positions
+        pts = edits.dropna(subset=["lat", "lon"]).groupby("cid")[["lat", "lon"]].median()
+        self.points = {int(c): (round(float(r.lat), 4), round(float(r.lon), 4)) for c, r in pts.iterrows()}
         self.bundle = tree_model.load(task)
 
     def listing(self) -> list[dict]:
         cs = self.changesets
         return [{"cid": int(cid), "label": int(row["label"]), "score": round(float(row[self.headline]), 4),
                  "n_edits": int(cs.at[cid, "n_edits"]), "created_at": cs.at[cid, "created_at"],
-                 "comment": (cs.at[cid, "comment"] or "")[:80]}
+                 "comment": (cs.at[cid, "comment"] or "")[:80],
+                 "point": self.points.get(int(cid))}
                 for cid, row in self.scores.iterrows()]
+
+    def metrics(self) -> dict:
+        """Everything on the overview, from round 4's stored outputs only.
+
+        Confusion counts come from the exported scores at the headline model's validation
+        threshold; the multi-seed summary is round 4's analysis/seeds.json, unchanged."""
+        t = self.models[self.headline]["threshold"]
+        s, y = self.scores[self.headline].to_numpy(), self.scores["label"].to_numpy()
+        flag = s >= t
+        counts = {"caught": int((flag & (y == 1)).sum()), "false_alarm": int((flag & (y == 0)).sum()),
+                  "missed": int((~flag & (y == 1)).sum()), "cleared": int((~flag & (y == 0)).sum())}
+        seeds = json.loads((ROUND4 / "analysis" / "seeds.json").read_text())["tasks"].get(self.task, {})
+        # what the edit-token model learned, as round 4 stored it (seed 20260904 hybrid run)
+        runs = sorted((ROUND4 / "raw/experiments/runs/baselines").glob(f"*_{self.task}_R1b_s20260904"))
+        hyb = json.loads((runs[0] / "results.json").read_text())["models"]["hybrid"] if runs else {}
+        return {"task": self.task, "headline": self.headline, "threshold": t, "n": int(len(y)),
+                "counts": counts, "round4": {k: {m: v.get(m) for m in ("pr_auc", "one_per_author", "f1", "accuracy")}
+                                             for k, v in seeds.get("models", {}).items()},
+                "vs_hybrid": seeds.get("vs_hybrid_seed_averaged", {}),
+                "ovid_published": OVID_PUBLISHED if self.task == "ovid" else None,
+                "tokens": {"damaging": hyb.get("most_damaging_tokens", [])[:12],
+                           "benign": hyb.get("most_benign_tokens", [])[:12]},
+                "source": (ROUND4.relative_to(tree_model.REPO) / "analysis" / "seeds.json").as_posix()}
 
     def detail(self, cid: int) -> dict:
         if cid not in self.scores.index:
@@ -88,6 +138,7 @@ class Replay:
         edits = self.edits.get(cid, pd.DataFrame())
         token_scores = tree_model.edit_token_scores(self.bundle, edits["diff_tokens"].tolist())
         stored = [{"position": int(e.position), "otype": e.otype, "oid": int(e.oid), "action": e.action,
+                   "version": int(e.version) if pd.notna(e.version) else None,
                    "tokens": e.diff_tokens, "text": e.text, "old_text": e.old_text,
                    "attention": float(e.attention), "token_score": float(s)}
                   for e, s in zip(edits.itertuples(), token_scores)]
@@ -100,6 +151,10 @@ class Replay:
 
 
 def replay_map(cid: int) -> dict | None:
+    if OFFLINE:
+        cached = osm_live.GEOMETRY_DIR / f"osm_{cid}.json"
+        return json.loads(cached.read_text()) if cached.exists() else {
+            "error": "offline mode: this changeset's map was not recorded (python visual/precache_maps.py)"}
     try:
         return osm_live.cached_display(session, cid)
     except (osm_live.ChangesetNotFound, osm_live.UpstreamError) as exc:
@@ -124,8 +179,12 @@ def jsonable(value):
 @lru_cache(maxsize=256)
 def live_detail(api_name: str, cid: int) -> dict:
     """Fetch and score one changeset. Closed changesets never change, so results are cached."""
+    if OFFLINE:
+        raise osm_live.UpstreamError("offline mode: live scoring needs the network (restart without --offline)")
     bundle = REPLAYS[LIVE_TASK].bundle
+    t0 = time.monotonic()
     fetched = osm_live.fetch_changeset(session, cid, api_name)
+    fetch_ms = round(1000 * (time.monotonic() - t0))
     frame = pd.DataFrame([fetched.changeset])
     p, signals = tree_model.score(bundle, frame)
     token_scores = tree_model.edit_token_scores(bundle, [e["diff_tokens"] for e in fetched.edits])
@@ -140,7 +199,8 @@ def live_detail(api_name: str, cid: int) -> dict:
                                        "test_pr_auc": round(bundle["test_pr_auc"], 4), "seeds": []}},
             "changeset": changeset_summary(pd.Series(fetched.changeset)), "signals": signals[0],
             "local_hybrid": float(p[0]), "reasons": tree_model.token_reasons(bundle, fetched.changeset["diff_tokens"]),
-            "edits": edits, "edit_ranking": "token_score", "map": osm_live.display_payload(fetched)}
+            "edits": edits, "edit_ranking": "token_score", "map": osm_live.display_payload(fetched),
+            "timing": {"fetch_ms": fetch_ms, "total_ms": round(1000 * (time.monotonic() - t0))}}
 
 
 class Feed:
@@ -192,6 +252,15 @@ class Feed:
 REPLAYS: dict[str, Replay] = {}
 
 
+def live_answer(api_name: str, cid: int) -> dict:
+    """live_detail, marked as cached when the answer came from its cache (no new fetch)."""
+    misses = live_detail.cache_info().misses
+    detail = live_detail(api_name, cid)
+    if live_detail.cache_info().misses == misses:
+        return {**detail, "timing": {"cached": True}}
+    return detail
+
+
 def replay(task: str) -> Replay:
     if task not in REPLAYS:
         raise NotInReplay(f"no replay data for task {task!r}")
@@ -202,8 +271,9 @@ ROUTES = [
     (re.compile(r"^/api/config$"), lambda: config()),
     (re.compile(r"^/api/replay/(\w+)$"), lambda task: replay(task).listing()),
     (re.compile(rf"^/api/replay/(\w+)/{CID}$"), lambda task, cid: replay(task).detail(int(cid))),
-    (re.compile(rf"^/api/live/(osm|sandbox)/{CID}$"), lambda api, cid: live_detail(api, int(cid))),
-    (re.compile(r"^/api/feed$"), lambda: FEED.snapshot()),
+    (re.compile(rf"^/api/live/(osm|sandbox)/{CID}$"), lambda api, cid: live_answer(api, int(cid))),
+    (re.compile(r"^/api/feed$"), lambda: [] if OFFLINE else FEED.snapshot()),
+    (re.compile(r"^/api/metrics/(\w+)$"), lambda task: replay(task).metrics()),
 ]
 
 
@@ -214,7 +284,9 @@ def config() -> dict:
             "live": {"task": LIVE_TASK, "threshold": live["threshold"],
                      "test_pr_auc": round(live["test_pr_auc"], 4)},
             "apis": {"osm": "https://www.openstreetmap.org",
-                     "sandbox": "https://master.apis.dev.openstreetmap.org"}}
+                     "sandbox": "https://master.apis.dev.openstreetmap.org"},
+            "offline": OFFLINE, "google_maps_key": None if OFFLINE else google_maps_key(),
+            "round": ROUND4.name, "ovid_published": OVID_PUBLISHED}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -250,6 +322,10 @@ class Handler(SimpleHTTPRequestHandler):
             self.log_error("unhandled %r", exc)
             self.send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": f"server error: {exc!r}"})
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def send_json(self, status: HTTPStatus, body) -> None:
         blob = json.dumps(body, default=jsonable, allow_nan=False).encode()
         self.send_response(status)
@@ -266,7 +342,11 @@ class Handler(SimpleHTTPRequestHandler):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--offline", action="store_true",
+                    help="no network: replay and recorded maps only (fallback for a demo room)")
     args = ap.parse_args()
+    global OFFLINE
+    OFFLINE = args.offline
     for task in TASKS:
         REPLAYS[task] = Replay(task)
     # Loopback only: the demo is for this laptop, and the API has no authentication.

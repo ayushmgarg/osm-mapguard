@@ -506,8 +506,15 @@ Design and evidence: `docs/model/MODEL_V3.md`. Every item is a config switch mea
   nothing beats the hybrid significantly.
 - [x] Final multi-seed round = round 4 (3 seeds). 5 seeds not needed: seed sd ≤ 0.007 vs
   test-set interval ≈ ±0.012.
-- [ ] Open: v3 deep model transfers worse over 7 years (ovid_modern temporal 0.874 vs 0.908 in
-  v2.1; one seed) - report as an observation.
+- [x] v3 deep model transfers worse over 7 years (ovid_modern temporal 0.874 vs 0.908 in v2.1;
+  one seed); trees hold (0.905). Decided 2026-10-22: no 3-seed temporal rerun - reported as a
+  single-seed observation.
 - [x] README rewritten with final results; docs organised into docs/{model,data,running,planning}.
 - [x] Dataset release v1.2.0 (side tables: object context, WHERE, dump source).
-- [ ] Report / presentation; visual (demo).
+- [x] Visual / demo (2026-10-22): review console in `visual/` - PR #3 (brickstercodes) merged as the
+  base, PR #2's prototype (tanay15) kept in `visual/prototype/` and its ideas folded in (overview
+  map, offline mode, CLI). Redesign; overview with round-4 metrics; before/after + type toggles;
+  map <-> edit sync; Google Maps panel (key in visual/.env); 27 tests (served scores = round 4).
+- [x] Trained checkpoints released (round 4 deep, stack folds, CPU hybrid refit).
+- [ ] Report / research paper.
+- [ ] Repo cleanup.

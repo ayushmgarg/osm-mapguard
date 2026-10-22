@@ -271,9 +271,18 @@ stage also runs on a CPU, more slowly.
 
 ### 4. See it work: the demo
 
-[`visual/`](visual/README.md) is a local web app. It replays round 4's outputs on a map beside
-satellite imagery, and it scores any changeset fetched live from OpenStreetMap, or from OSM's
-sandbox for a safe test edit, on a laptop CPU.
+[`visual/`](visual/README.md) is a local review console. It has five modes:
+- **an overview map** of every held-out changeset, coloured by outcome;
+- **eight scenarios** (a fake park, an invented road, a deleted landmark, …);
+- **the full test set**, with round 4's stored outputs from every model;
+- **live scoring** of any changeset fetched from OpenStreetMap now, or from OSM's sandbox for a safe test edit, on a laptop CPU;
+- **a live feed.**
+
+Each changeset is drawn before/after on the OSM map, next to satellite imagery or Google Maps.
+The decision panel shows the score, the who/what/text evidence and the edit the deep model
+attended to. An `--offline` mode works with no network.
+
+![Review console: a fake park](visual/screenshots/pokemon-park.png)
 
 ---
 

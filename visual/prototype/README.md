@@ -1,3 +1,12 @@
+> **Prototype, kept for reference (moved from `demo/` on 2026-10-22).** The review console in
+> [`visual/`](../README.md) is the maintained demo. It took these ideas from this prototype: the
+> map of every test changeset with outcome filters (its Overview tab), the offline fallback
+> (`server.py --offline`), the command-line scorer (`visual/score.py`), and the requirements
+> audit in `VISUAL_PLAN.md`. Differences to know: this prototype's live scorer (`live/model/`)
+> was retrained on its own random 70/10/20 split, not the frozen R1b split, so its numbers are
+> not the paper's; the console's live model is round 4's hybrid refit on the frozen split.
+> Paths below assume the old `demo/` location.
+
 # MapGuard live map
 
 A local website with a real OpenStreetMap map and two modes:

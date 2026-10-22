@@ -3,53 +3,102 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MapGuard review console</title>
+<title>MapGuard · changeset review console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;700&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="bar">
-  <h1>MapGuard</h1>
+<header class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7L16 2z" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <path d="M9 17.5 13.5 13l4 4 5.5-6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1>MapGuard</h1>
+      <p class="tagline">changeset review console · research prototype</p>
+    </div>
+  </div>
   <nav class="modes" aria-label="What to look at">
+    <button data-mode="overview" aria-pressed="false">Overview</button>
     <button data-mode="scenarios" aria-pressed="true">Scenarios</button>
     <button data-mode="replay" aria-pressed="false">Test set</button>
-    <button data-mode="live" aria-pressed="false">Score a changeset</button>
-    <button data-mode="feed" aria-pressed="false">Live feed</button>
+    <button data-mode="live" aria-pressed="false" data-needs-network>Score a changeset</button>
+    <button data-mode="feed" aria-pressed="false" data-needs-network>Live feed</button>
   </nav>
+  <div class="chips" id="chips"></div>
 </header>
 
-<div class="layout">
-  <aside class="picker" id="picker" aria-label="Choose a changeset"></aside>
+<div class="workspace" id="workspace">
+  <aside class="rail" id="picker" aria-label="Choose a changeset"></aside>
 
-  <main id="main">
-    <section class="maps" aria-label="The edit on the map and on satellite imagery">
+  <main class="stage" id="stage">
+    <section class="maps" aria-label="The edit on the map and from above">
       <figure class="map-frame">
+        <div class="map-toolbar" role="toolbar" aria-label="Map layers">
+          <span class="frame-title">OpenStreetMap</span>
+          <div class="seg" id="state-toggle" role="group" aria-label="Show state">
+            <button data-state="both" aria-pressed="true">Before + after</button>
+            <button data-state="before" aria-pressed="false">Before</button>
+            <button data-state="after" aria-pressed="false">After</button>
+          </div>
+          <div class="seg" id="type-toggle" role="group" aria-label="Object types">
+            <button data-type="node" aria-pressed="true">Nodes</button>
+            <button data-type="way" aria-pressed="true">Ways</button>
+          </div>
+          <button class="ghost" id="fit" title="Fit the whole changeset">Fit</button>
+        </div>
         <div id="map-osm" class="map"></div>
-        <figcaption>
-          <span class="key before">before</span>
-          <span class="key after">after</span>
-          <span class="key focus">selected edit</span>
-          OpenStreetMap
-        </figcaption>
       </figure>
       <figure class="map-frame">
+        <div class="map-toolbar">
+          <span class="frame-title" id="right-title">From above</span>
+          <div class="seg" id="imagery-toggle" role="group" aria-label="Imagery source">
+            <button data-imagery="esri" aria-pressed="true">Satellite</button>
+            <button data-imagery="google" aria-pressed="false" hidden>Google Maps</button>
+          </div>
+          <a class="ghost" id="gmaps" target="_blank" rel="noopener">Open in Google Maps ↗</a>
+        </div>
+        <p id="imagery-error" class="error" hidden></p>
         <div id="map-sat" class="map"></div>
-        <figcaption>
-          Satellite imagery: is the feature really there?
-          <a id="gmaps" target="_blank" rel="noopener">Open in Google Maps</a>
-        </figcaption>
+        <div id="map-google" class="map" hidden></div>
       </figure>
+      <div class="legend" aria-label="Map legend">
+        <span class="lk created">created</span>
+        <span class="lk modified">modified</span>
+        <span class="lk deleted">deleted</span>
+        <span class="lk before">before the edit</span>
+        <span class="lk focus">selected edit</span>
+        <span class="legend-note">Click a shape to inspect that edit.</span>
+      </div>
     </section>
-
-    <section id="detail" class="detail">
-      <p class="empty">Pick a scenario on the left to see how MapGuard judged it.</p>
-    </section>
+    <section class="below" id="below" aria-live="polite"></section>
   </main>
+
+  <aside class="inspector" id="detail" aria-label="Decision and evidence">
+    <div class="welcome">
+      <h2>How MapGuard reads a changeset</h2>
+      <ol>
+        <li><b>Who</b> made it: the account's history before this edit.</li>
+        <li><b>What</b> each edit did: <code>+leisure=park</code>, <code>-historic</code>, <code>~highway:track&gt;motorway</code>.</li>
+        <li><b>Text</b>: the comment and tag text, in any language.</li>
+      </ol>
+      <p>Pick a scenario on the left. The maps show the edit before and after, next to the ground from above; this panel shows the decision and the evidence behind it.</p>
+    </div>
+  </aside>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<footer class="statusbar" id="statusbar">
+  <span id="status-mode"></span>
+  <span id="status-source"></span>
+  <span id="status-timing"></span>
+  <span class="attribution">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Imagery © Esri, Maxar, Earthstar Geographics · Usernames never shown · Research prototype: a flag means "worth a reviewer's look", not proof</span>
+</footer>
+
+<script src="vendor/leaflet/leaflet.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

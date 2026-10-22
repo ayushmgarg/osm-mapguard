@@ -48,8 +48,17 @@ TEXT_FEATURES = {"text_score", "tab:comment_length", "tab:text_chars", "tab:n_te
 
 
 def default_store() -> Path:
-    root = Path(os.environ.get("MAPGUARD_DATA", Path.home() / "osm-data-mac"))
-    return root / "release" / "v1.1.0" / "feature_store"
+    """The released (pseudonymised) v1.1.0 feature store. First match wins:
+    MAPGUARD_FEATURE_STORE, then <MAPGUARD_DATA>/release/v1.1.0/feature_store, then the copy
+    `scripts/package_release.py` leaves in dist/, then ~/osm-data-mac (the original Mac layout)."""
+    if os.environ.get("MAPGUARD_FEATURE_STORE"):
+        return Path(os.environ["MAPGUARD_FEATURE_STORE"])
+    candidates = []
+    if os.environ.get("MAPGUARD_DATA"):
+        candidates.append(Path(os.environ["MAPGUARD_DATA"]) / "release" / "v1.1.0" / "feature_store")
+    candidates += [REPO / "dist" / "mapguard-dataset-v1.1.0" / "feature_store",
+                   Path.home() / "osm-data-mac" / "release" / "v1.1.0" / "feature_store"]
+    return next((c for c in candidates if (c / "changesets.parquet").exists()), candidates[0])
 
 
 def signal_of(feature: str) -> str:
