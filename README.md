@@ -269,6 +269,12 @@ cluster; round 1 ran on an Apple M4 CPU. A full round
 (all six tasks × 3 seeds, stacking and temporal evaluation) takes about 3.7 hours there. Every
 stage also runs on a CPU, more slowly.
 
+### 4. See it work: the demo
+
+[`visual/`](visual/README.md) is a local web app. It replays round 4's outputs on a map beside
+satellite imagery, and it scores any changeset fetched live from OpenStreetMap, or from OSM's
+sandbox for a safe test edit, on a laptop CPU.
+
 ---
 
 ## Repository map
@@ -289,6 +295,7 @@ experiments/rounds/   every training round: raw outputs, analysis, a README with
 experiments/splits/   the frozen train/validation/test splits
 results/              data-gate measurements, early baselines, probes
 docs/                 architecture, model, data, running and planning documents
+visual/               the demo: local server, live OSM scoring, review console
 tests/                test suite
 ```
 

@@ -1,6 +1,9 @@
-# Architecture diagram
+# Architecture diagrams
 
-The end-to-end pipeline, from OSM sources to a scored changeset, as one data-flow diagram.
+Two data-flow diagrams:
+
+- **the pipeline**: from OSM sources to a scored changeset (most of this page);
+- **the demo**: how [`visual/`](../../visual/README.md) replays round 4 and scores live changesets ([below](#the-demo)).
 
 | File | What |
 |---|---|
@@ -43,3 +46,23 @@ The diagram leaves out four parts:
 - the research stages 03, 04, 05 and 06.
 
 The top-level README covers all of them.
+
+## The demo
+
+| File | What |
+|---|---|
+| [`mapguard-demo.dataflow.json`](mapguard-demo.dataflow.json) | the source. Edit this, never the HTML. |
+| [`mapguard-demo.html`](mapguard-demo.html) | the interactive diagram |
+
+It has two paths into one local server:
+- **replay**: round 4's stored outputs are exported once into `visual/data`;
+- **live**: a changeset is fetched from the OSM API or the sandbox and featurised by `build_store`'s own functions.
+
+Rebuild it with the same two commands as above, using `mapguard-demo` in place of `mapguard-pipeline`.
+
+| Node | Code |
+|---|---|
+| Round 4 runs | [`experiments/rounds/r4_2026-10-13_altair_h100_seeds/`](../../experiments/rounds/r4_2026-10-13_altair_h100_seeds/) |
+| Release v1.1.0 | the dataset [release](https://github.com/ayushmgarg/osm-mapguard/releases/tag/v1.1.0) |
+| export_demo.py, tree_model.py, osm_live.py, server.py | [`visual/`](../../visual/) |
+| Review console | [`visual/web/`](../../visual/web/) |

@@ -56,3 +56,7 @@ experiments/pipeline/
 # frozen split files are deliberately TRACKED: they are the reproducibility contract
 !experiments/splits/
 altair/_dist/
+
+# demo: refit models and exported data are regenerated (visual/README.md)
+visual/models/
+visual/data/

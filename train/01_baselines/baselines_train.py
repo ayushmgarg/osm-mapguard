@@ -86,7 +86,8 @@ def author_weights(uids, rows) -> np.ndarray:
 
 
 def fit_hybrid(store, prep, tr, va, te, y, seed, params, weighting=True, *,
-               extra_tokens=None, extra_tab=None, dense_views=None, extra_stack=None, tune=False):
+               extra_tokens=None, extra_tab=None, dense_views=None, extra_stack=None, tune=False,
+               keep_models=None):
     """Out-of-fold stacking: text models are fitted on 4/5 of the training authors and score
     the held-out fifth, so the tree never sees a text score that was fitted on its own row.
 
@@ -98,6 +99,8 @@ def fit_hybrid(store, prep, tr, va, te, y, seed, params, weighting=True, *,
       extra_stack   {name: (N,)} scores already out-of-fold for training rows (deep OOF score)
       tune          pick the tree settings from TUNE_GRID by 3-fold author-grouped CV on the
                     training rows only (validation and test are never looked at)
+      keep_models   a dict to receive the fitted vectorisers, view models and tree, so a caller
+                    (the visual/ demo) can score new changesets with exactly this model
     """
     import xgboost as xgb
     from sklearn.feature_extraction.text import TfidfVectorizer
@@ -155,6 +158,9 @@ def fit_hybrid(store, prep, tr, va, te, y, seed, params, weighting=True, *,
         params, tuning = tune_tree(X2, y, tri, groups, sw, seed)
     clf = xgb.XGBClassifier(**params, eval_metric="aucpr", random_state=seed, n_jobs=-1)
     clf.fit(X2[tri], y[tri], sample_weight=sw[tri], eval_set=[(X2[vai], y[vai])], verbose=False)
+    if keep_models is not None:
+        keep_models.update(token_vectoriser=tv, text_vectoriser=cv, view_models=fitted,
+                           view_names=[v[0] for v in views], tree=clf, feature_names=names)
     coef = sorted(zip(tv.get_feature_names_out(), fitted[0].coef_[0]), key=lambda kv: kv[1])
     stacked = [n for n in names if not n.startswith(("tab:", "extra:"))]
     imp = dict(zip(names, clf.feature_importances_))
