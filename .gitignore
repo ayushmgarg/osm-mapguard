@@ -60,3 +60,6 @@ altair/_dist/
 # demo: refit models and exported data are regenerated (visual/README.md)
 visual/models/
 visual/data/
+
+# visual: private Python copy used by visual/run.bat
+visual/.runtime/
