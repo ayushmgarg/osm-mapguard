@@ -20,7 +20,7 @@ if not exist "%PYHOME%\python.exe" (
   exit /b 1
 )
 set "PYTHONPATH=%CD%\visual\.venv\Lib\site-packages"
-echo Starting MapGuard on http://127.0.0.1:8765  - leave this window open; close it to stop.
-start "" /b cmd /c "%SystemRoot%\System32\timeout.exe /t 8 >/dev/null & start http://127.0.0.1:8765"
+echo Starting MapGuard on http://127.0.0.1:8765 - leave this window open; close it to stop.
+start "" /b cmd /c "timeout /t 8 /nobreak >nul 2>nul & start http://127.0.0.1:8765"
 "%PYHOME%\python.exe" visual\server.py %*
 pause
