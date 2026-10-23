@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Self-supervised, geometry-aware detection of damaging edits in OpenStreetMap"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 
 # Runtime pins live in requirements.txt so a Colab or Kaggle cell can install them
 # without building this package. Installing this project is only about making

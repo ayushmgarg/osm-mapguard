@@ -345,4 +345,4 @@ The full documentation index is [docs/README.md](docs/README.md).
 
 ## Licence
 
-Code: [MIT](LICENSE). Data derived from OpenStreetMap: ODbL-1.0, © OpenStreetMap contributors.
+Code: MIT with one change: publishing it, or work or results derived from it, needs the author's written permission ([LICENSE](LICENSE)). Data derived from OpenStreetMap: ODbL-1.0, © OpenStreetMap contributors.
