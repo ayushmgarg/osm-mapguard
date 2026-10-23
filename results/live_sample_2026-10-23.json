@@ -1,0 +1,1476 @@
+{
+ "note": "Live-model scores (visual/server.live_detail: hybrid trees, ovid_modern, CPU refit) of recently closed changesets, fetched 2026-10-23 ~04:40-04:55 UTC with read-only GETs. No labels. Used in report v2, Section IX and Fig. 16.",
+ "threshold": 0.316,
+ "osm": {
+  "n": 146,
+  "flagged": 22,
+  "rows": [
+   {
+    "cid": 190911130,
+    "score": 0.023,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "2.41.2 update DoT #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911132,
+    "score": 0.008,
+    "thr": 0.316,
+    "n": "146",
+    "editor": "iD",
+    "comment": "2.42.3 Santa Fe: Santa Fe Regional Airport area edits",
+    "prior": null
+   },
+   {
+    "cid": 190911133,
+    "score": 0.011,
+    "thr": 0.316,
+    "n": "18",
+    "editor": "iD",
+    "comment": "2.41.2 Added missing roads according to Bing aerial image",
+    "prior": null
+   },
+   {
+    "cid": 190911134,
+    "score": 0.271,
+    "thr": 0.316,
+    "n": "86",
+    "editor": "iD",
+    "comment": "2.42.3 千岛湖北环线",
+    "prior": null
+   },
+   {
+    "cid": 190911137,
+    "score": 0.042,
+    "thr": 0.316,
+    "n": "11",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911138,
+    "score": 0.048,
+    "thr": 0.316,
+    "n": "44",
+    "editor": "Vespucci",
+    "comment": "22.1.2.0 Added roads, tracks, footways and trails",
+    "prior": null
+   },
+   {
+    "cid": 190911139,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 en) Road details after survey",
+    "prior": null
+   },
+   {
+    "cid": 190911140,
+    "score": 0.061,
+    "thr": 0.316,
+    "n": "46",
+    "editor": "Go",
+    "comment": "Map!! 6.1.0 琉球大学の森林、芝生、街路灯など�",
+    "prior": null
+   },
+   {
+    "cid": 190911141,
+    "score": 0.147,
+    "thr": 0.316,
+    "n": "57",
+    "editor": "iD",
+    "comment": "2.42.3 Maroota Ridges fire trails",
+    "prior": null
+   },
+   {
+    "cid": 190911142,
+    "score": 0.015,
+    "thr": 0.316,
+    "n": "161",
+    "editor": "iD",
+    "comment": "2.42.3 aligned road",
+    "prior": null
+   },
+   {
+    "cid": 190911143,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Every",
+    "comment": "Door Android 7 Updated a bus_stop",
+    "prior": null
+   },
+   {
+    "cid": 190911145,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Go",
+    "comment": "Map!! 6.2.1 Light updated (3233 / M4188.5)",
+    "prior": null
+   },
+   {
+    "cid": 190911146,
+    "score": 0.866,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 Venue is no longer called HBF Arena. It is now Are",
+    "prior": null
+   },
+   {
+    "cid": 190911148,
+    "score": 0.038,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Added oneway tag near Avenida Aeroporto #adt",
+    "prior": null
+   },
+   {
+    "cid": 190911149,
+    "score": 0.014,
+    "thr": 0.316,
+    "n": "9",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Created the service way near Rodovia Geraldo Felip",
+    "prior": null
+   },
+   {
+    "cid": 190911150,
+    "score": 0.052,
+    "thr": 0.316,
+    "n": "8",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911151,
+    "score": 0.07,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Removed access:delievery tag according to Lyft-own",
+    "prior": null
+   },
+   {
+    "cid": 190911152,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 surface=paving_stones",
+    "prior": null
+   },
+   {
+    "cid": 190911153,
+    "score": 0.101,
+    "thr": 0.316,
+    "n": "12",
+    "editor": "iD",
+    "comment": "2.42.3 拉加寺",
+    "prior": null
+   },
+   {
+    "cid": 190911154,
+    "score": 0.86,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "iD",
+    "comment": "2.42.3 Renamed Almond tree lane to Almondtree Lane",
+    "prior": null
+   },
+   {
+    "cid": 190911155,
+    "score": 0.074,
+    "thr": 0.316,
+    "n": "116",
+    "editor": "iD",
+    "comment": "2.42.3 add sidewalks",
+    "prior": null
+   },
+   {
+    "cid": 190911156,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "75",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 en) Added missing buildings  #tomtom #maproulette mpr.",
+    "prior": null
+   },
+   {
+    "cid": 190911157,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Modified residential road #grabOSM",
+    "prior": null
+   },
+   {
+    "cid": 190911158,
+    "score": 0.071,
+    "thr": 0.316,
+    "n": "6",
+    "editor": "iD",
+    "comment": "2.42.3 Downhill, biker only trail in Bean Peaks area",
+    "prior": null
+   },
+   {
+    "cid": 190911159,
+    "score": 0.055,
+    "thr": 0.316,
+    "n": "48",
+    "editor": "iD",
+    "comment": "2.42.3 Park Hills Addresses",
+    "prior": null
+   },
+   {
+    "cid": 190911160,
+    "score": 0.029,
+    "thr": 0.316,
+    "n": "16",
+    "editor": "iD",
+    "comment": "2.41.2 add new geometry #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911161,
+    "score": 0.008,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "JOSM/1.5",
+    "comment": "(19439 en) update barrier  #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911162,
+    "score": 0.31,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.2 flock camera",
+    "prior": null
+   },
+   {
+    "cid": 190911163,
+    "score": 0.069,
+    "thr": 0.316,
+    "n": "8",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911164,
+    "score": 0.083,
+    "thr": 0.316,
+    "n": "221",
+    "editor": "iD",
+    "comment": "2.42.3 Updated North Ogden City offices.",
+    "prior": null
+   },
+   {
+    "cid": 190911165,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "6",
+    "editor": "Rapid",
+    "comment": "2.4.2 #osmp Aktualizacja danych po imporcie UMP #maproul",
+    "prior": null
+   },
+   {
+    "cid": 190911166,
+    "score": 0.408,
+    "thr": 0.316,
+    "n": "72",
+    "editor": "iD",
+    "comment": "2.42.3 Restore existing highway closed off for constructi",
+    "prior": null
+   },
+   {
+    "cid": 190911167,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Modified service highway near Avenida Abílio Augu",
+    "prior": null
+   },
+   {
+    "cid": 190911168,
+    "score": 0.026,
+    "thr": 0.316,
+    "n": "75",
+    "editor": "osm-revert",
+    "comment": "git#c8b2a Revert meines eigenen fehlerhaften Changesets",
+    "prior": null
+   },
+   {
+    "cid": 190911169,
+    "score": 0.008,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 updated hours. added phone number, address",
+    "prior": null
+   },
+   {
+    "cid": 190911170,
+    "score": 0.011,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "better",
+    "comment": "osm.org v1.7. Changed opening_hours = opening_hours=Mo-Fr 08:00-",
+    "prior": null
+   },
+   {
+    "cid": 190911171,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "53",
+    "editor": "Vespucci",
+    "comment": "22.1.3.0 další všeobecné úpravy",
+    "prior": null
+   },
+   {
+    "cid": 190911172,
+    "score": 0.412,
+    "thr": 0.316,
+    "n": "227",
+    "editor": "iD",
+    "comment": "2.42.3 blok Senin Rt 1",
+    "prior": null
+   },
+   {
+    "cid": 190911173,
+    "score": 0.028,
+    "thr": 0.316,
+    "n": "6",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911174,
+    "score": 0.012,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Removed access:delivery=no tag according to Lyft-o",
+    "prior": null
+   },
+   {
+    "cid": 190911175,
+    "score": 0.004,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Modified track #grabOSM",
+    "prior": null
+   },
+   {
+    "cid": 190911176,
+    "score": 0.768,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "2.42.3 Renamed misspelled road",
+    "prior": null
+   },
+   {
+    "cid": 190911177,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "8",
+    "editor": "iD",
+    "comment": "2.41.2 Modified lanes tag and added turn:lanes tag on the",
+    "prior": null
+   },
+   {
+    "cid": 190911178,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "10",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 fr) Rue Saint-Vincent - Sint-Vincentiusstraat : footwa",
+    "prior": null
+   },
+   {
+    "cid": 190911179,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Every",
+    "comment": "Door Android 6 Updated a fast_food",
+    "prior": null
+   },
+   {
+    "cid": 190911180,
+    "score": 0.453,
+    "thr": 0.316,
+    "n": "27",
+    "editor": "iD",
+    "comment": "2.42.3 fixed up tram tags and paths",
+    "prior": null
+   },
+   {
+    "cid": 190911181,
+    "score": 0.324,
+    "thr": 0.316,
+    "n": "78",
+    "editor": "iD",
+    "comment": "2.42.3 clean up Territorial Road",
+    "prior": null
+   },
+   {
+    "cid": 190911182,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "OsmAnd",
+    "comment": "5.4.11 Edit Village.",
+    "prior": null
+   },
+   {
+    "cid": 190911183,
+    "score": 0.056,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.2 added direction on flock camera",
+    "prior": null
+   },
+   {
+    "cid": 190911184,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Every",
+    "comment": "Door Android 6 Updated a fast_food",
+    "prior": null
+   },
+   {
+    "cid": 190911185,
+    "score": 0.009,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 en) Mapping missing roads in Vietnam #grabosm https://",
+    "prior": null
+   },
+   {
+    "cid": 190911187,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "better",
+    "comment": "osm.org v1.7. Add name=得科河 for way 886015232",
+    "prior": null
+   },
+   {
+    "cid": 190911188,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "2.42.3 fixed surface",
+    "prior": null
+   },
+   {
+    "cid": 190911189,
+    "score": 0.09,
+    "thr": 0.316,
+    "n": "23",
+    "editor": "iD",
+    "comment": "2.42.3 fix broken geometry after https://www.openstreetma",
+    "prior": null
+   },
+   {
+    "cid": 190911190,
+    "score": 0.037,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911191,
+    "score": 0.091,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "2.42.3 Downhill, biker only trail in Bean Peaks area",
+    "prior": null
+   },
+   {
+    "cid": 190911192,
+    "score": 0.011,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "JOSM/1.5",
+    "comment": "(19555 en) Mapping missing roads in Vietnam #grabosm https://",
+    "prior": null
+   },
+   {
+    "cid": 190911193,
+    "score": 0.063,
+    "thr": 0.316,
+    "n": "20",
+    "editor": "iD",
+    "comment": "2.42.3 Missing apartment addresses",
+    "prior": null
+   },
+   {
+    "cid": 190911194,
+    "score": 0.962,
+    "thr": 0.316,
+    "n": "47",
+    "editor": "iD",
+    "comment": "2.42.3 update road area",
+    "prior": null
+   },
+   {
+    "cid": 190911195,
+    "score": 0.016,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "2.41.2 change highway #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911196,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 en) Charging station removed after survey",
+    "prior": null
+   },
+   {
+    "cid": 190911197,
+    "score": 0.245,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "2.42.3 fixed area overlap.",
+    "prior": null
+   },
+   {
+    "cid": 190911198,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Created highway near MT-140 #adt",
+    "prior": null
+   },
+   {
+    "cid": 190911199,
+    "score": 0.008,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Added Jalan Riverview based on Maps feedback near ",
+    "prior": null
+   },
+   {
+    "cid": 190911200,
+    "score": 0.013,
+    "thr": 0.316,
+    "n": "423",
+    "editor": "JOSM/1.5",
+    "comment": "(19555 en) #hotosm-project-43038 #myOSM #help-mm-mapped build",
+    "prior": null
+   },
+   {
+    "cid": 190911201,
+    "score": 0.186,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 Venue is no longer operated by HBF therefore there",
+    "prior": null
+   },
+   {
+    "cid": 190911202,
+    "score": 0.147,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "iD",
+    "comment": "2.42.3 Moved Spirit Halloween, Added Valleyview's FreshCo",
+    "prior": null
+   },
+   {
+    "cid": 190911203,
+    "score": 0.044,
+    "thr": 0.316,
+    "n": "13",
+    "editor": "iD",
+    "comment": "2.42.3 Added missing structure.",
+    "prior": null
+   },
+   {
+    "cid": 190911204,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "better",
+    "comment": "osm.org v1.7. Add name=得科河 for way 1319322533",
+    "prior": null
+   },
+   {
+    "cid": 190911205,
+    "score": 0.373,
+    "thr": 0.316,
+    "n": "11",
+    "editor": "iD",
+    "comment": "2.42.3 汪宅",
+    "prior": null
+   },
+   {
+    "cid": 190911206,
+    "score": 0.447,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 dodanie nowego punktu - sklep",
+    "prior": null
+   },
+   {
+    "cid": 190911207,
+    "score": 0.918,
+    "thr": 0.316,
+    "n": "71",
+    "editor": "iD",
+    "comment": "2.42.3 Clear Creek Golf Holes",
+    "prior": null
+   },
+   {
+    "cid": 190911208,
+    "score": 0.036,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911209,
+    "score": 0.811,
+    "thr": 0.316,
+    "n": "96",
+    "editor": "iD",
+    "comment": "2.42.3 Fix stray name tags, screwup by me",
+    "prior": null
+   },
+   {
+    "cid": 190911210,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "better",
+    "comment": "osm.org v1.7. Add name=得科河 for way 1319322529",
+    "prior": null
+   },
+   {
+    "cid": 190911211,
+    "score": 0.533,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "Organic",
+    "comment": "Maps android Created a caravan shop and a school",
+    "prior": null
+   },
+   {
+    "cid": 190911212,
+    "score": 0.017,
+    "thr": 0.316,
+    "n": "216",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 es) Añadí edficios y numeración",
+    "prior": null
+   },
+   {
+    "cid": 190911213,
+    "score": 0.014,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "JOSM/1.5",
+    "comment": "(19555 en) Mapping missing roads in Vietnam #grabosm https://",
+    "prior": null
+   },
+   {
+    "cid": 190911214,
+    "score": 0.004,
+    "thr": 0.316,
+    "n": "8",
+    "editor": "Rapid",
+    "comment": "2.4.2 #osmp Aktualizacja danych po imporcie UMP #maproul",
+    "prior": null
+   },
+   {
+    "cid": 190911215,
+    "score": 0.516,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 No longer operated by HBF",
+    "prior": null
+   },
+   {
+    "cid": 190911216,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Modified residential road #grabOSM",
+    "prior": null
+   },
+   {
+    "cid": 190911217,
+    "score": 0.203,
+    "thr": 0.316,
+    "n": "144",
+    "editor": "iD",
+    "comment": "2.42.3 Drive Survey Mapillary & voice notes (own) Some fe",
+    "prior": null
+   },
+   {
+    "cid": 190911218,
+    "score": 0.004,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Digitaleo-OSM-API/1.",
+    "comment": "Update opening_hours for Škoda",
+    "prior": null
+   },
+   {
+    "cid": 190911219,
+    "score": 0.023,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 change road access",
+    "prior": null
+   },
+   {
+    "cid": 190911220,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Digitaleo-OSM-API/1.",
+    "comment": "Update opening_hours for Škoda",
+    "prior": null
+   },
+   {
+    "cid": 190911221,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "JOSM/1.5",
+    "comment": "(19481 en) Modified existing highway near Primeira Rua do Jar",
+    "prior": null
+   },
+   {
+    "cid": 190911222,
+    "score": 0.462,
+    "thr": 0.316,
+    "n": "120",
+    "editor": "iD",
+    "comment": "2.42.3 Saint-Narcisse",
+    "prior": null
+   },
+   {
+    "cid": 190911223,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911224,
+    "score": 0.548,
+    "thr": 0.316,
+    "n": "13",
+    "editor": "Vespucci",
+    "comment": "22.1.2.0 On my way past",
+    "prior": null
+   },
+   {
+    "cid": 190911226,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "iD",
+    "comment": "2.42.3 surface=paving_stones",
+    "prior": null
+   },
+   {
+    "cid": 190911227,
+    "score": 0.247,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.2 flock camera",
+    "prior": null
+   },
+   {
+    "cid": 190911229,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "38",
+    "editor": "Vespucci",
+    "comment": "22.1.3.0 další všeobecné úpravy",
+    "prior": null
+   },
+   {
+    "cid": 190911230,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Every",
+    "comment": "Door Android 6 Updated a fast_food",
+    "prior": null
+   },
+   {
+    "cid": 190911231,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 removed Hutt Valley Gymnastics tags (they moved to",
+    "prior": null
+   },
+   {
+    "cid": 190911232,
+    "score": 0.57,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 Renamed misspelled road",
+    "prior": null
+   },
+   {
+    "cid": 190911233,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "2.42.3 地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911234,
+    "score": 0.623,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "FairwayMapper.com",
+    "comment": "Map golf features at Clare Golf Course",
+    "prior": null
+   },
+   {
+    "cid": 190911235,
+    "score": 0.036,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.42.3 叶合恰村",
+    "prior": null
+   },
+   {
+    "cid": 190911237,
+    "score": 0.015,
+    "thr": 0.316,
+    "n": "16",
+    "editor": "JOSM/1.5",
+    "comment": "(19613 en) Agregué edificios faltantes #Kaart 2026",
+    "prior": null
+   },
+   {
+    "cid": 190911238,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "2.41.2 Modified residential road #grabOSM",
+    "prior": null
+   },
+   {
+    "cid": 190911239,
+    "score": 0.922,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "Renamed misspelled road",
+    "prior": null
+   },
+   {
+    "cid": 190911240,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911241,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "Rapid",
+    "comment": "#osmp Aktualizacja danych po imporcie UMP #maproulette mpr.l",
+    "prior": null
+   },
+   {
+    "cid": 190911242,
+    "score": 0.652,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "iD",
+    "comment": "Added lift gate based on imagery #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911244,
+    "score": 0.004,
+    "thr": 0.316,
+    "n": "33",
+    "editor": "iD",
+    "comment": "added missing roads according to Lyft-owned aerial imagery",
+    "prior": null
+   },
+   {
+    "cid": 190911245,
+    "score": 0.01,
+    "thr": 0.316,
+    "n": "22",
+    "editor": "JOSM/1.5",
+    "comment": "Created service ways near Rodovia Senador Eliseu Resende #ad",
+    "prior": null
+   },
+   {
+    "cid": 190911247,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Organic",
+    "comment": "Updated a cafe",
+    "prior": null
+   },
+   {
+    "cid": 190911248,
+    "score": 0.012,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "MAJ commerce - Caen",
+    "prior": null
+   },
+   {
+    "cid": 190911249,
+    "score": 0.007,
+    "thr": 0.316,
+    "n": "17",
+    "editor": "iD",
+    "comment": "Added missing roads according to Bing aerial imagery.",
+    "prior": null
+   },
+   {
+    "cid": 190911251,
+    "score": 0.837,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "Renamed misspelled road",
+    "prior": null
+   },
+   {
+    "cid": 190911252,
+    "score": 0.054,
+    "thr": 0.316,
+    "n": "6",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911253,
+    "score": 0.004,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "JOSM/1.5",
+    "comment": "Updated geometry in Vietnam #grabosm https://github.com/GRAB",
+    "prior": null
+   },
+   {
+    "cid": 190911254,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "25",
+    "editor": "iD",
+    "comment": "added missing roads according to Lyft-owned aerial imagery",
+    "prior": null
+   },
+   {
+    "cid": 190911255,
+    "score": 0.032,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "俄合科村",
+    "prior": null
+   },
+   {
+    "cid": 190911256,
+    "score": 0.012,
+    "thr": 0.316,
+    "n": "207",
+    "editor": "iD",
+    "comment": "#hotosm-project-65544 #CanCross #CRC #MissingMaps #BeReady #",
+    "prior": null
+   },
+   {
+    "cid": 190911257,
+    "score": 0.124,
+    "thr": 0.316,
+    "n": "263",
+    "editor": "iD",
+    "comment": "#VillagesBO #OSM_Inspector #AjusteTrazasGPS #PoblacionesBoli",
+    "prior": null
+   },
+   {
+    "cid": 190911258,
+    "score": 0.007,
+    "thr": 0.316,
+    "n": "94",
+    "editor": "iD",
+    "comment": "Smoothed out road and aligned stream.  Added hammer head.",
+    "prior": null
+   },
+   {
+    "cid": 190911259,
+    "score": 0.031,
+    "thr": 0.316,
+    "n": "316",
+    "editor": "JOSM/1.5",
+    "comment": "#hotosm-project-65346 #myOSM #help-mm-mapped roads",
+    "prior": null
+   },
+   {
+    "cid": 190911260,
+    "score": 0.014,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "Rapid",
+    "comment": "#osmp Aktualizacja danych po imporcie UMP #maproulette mpr.l",
+    "prior": null
+   },
+   {
+    "cid": 190911261,
+    "score": 0.096,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "隧道",
+    "prior": null
+   },
+   {
+    "cid": 190911262,
+    "score": 0.043,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "Update lane guide",
+    "prior": null
+   },
+   {
+    "cid": 190911263,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911264,
+    "score": 0.009,
+    "thr": 0.316,
+    "n": "10",
+    "editor": "iD",
+    "comment": "Added missing roads according to Lyft-owned aerial imagery.",
+    "prior": null
+   },
+   {
+    "cid": 190911266,
+    "score": 0.008,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "JOSM/1.5",
+    "comment": "Kalety dodanie AED w Hemarpol",
+    "prior": null
+   },
+   {
+    "cid": 190911267,
+    "score": 0.013,
+    "thr": 0.316,
+    "n": "9",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911268,
+    "score": 0.128,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "Deleted road (19.040130, 72.862227) as per the source.",
+    "prior": null
+   },
+   {
+    "cid": 190911269,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "10",
+    "editor": "JOSM/1.5",
+    "comment": "#hotosm-project-65346 #myOSM #help-mm-mapped roads",
+    "prior": null
+   },
+   {
+    "cid": 190911270,
+    "score": 0.032,
+    "thr": 0.316,
+    "n": "151",
+    "editor": "JOSM/1.5",
+    "comment": "#hotosm-project-66831 #HOTOMGuru2026  se agregaron árboles",
+    "prior": null
+   },
+   {
+    "cid": 190911271,
+    "score": 0.66,
+    "thr": 0.316,
+    "n": "3",
+    "editor": "iD",
+    "comment": "Renamed misspelled road",
+    "prior": null
+   },
+   {
+    "cid": 190911272,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "Every",
+    "comment": "Updated a fast_food",
+    "prior": null
+   },
+   {
+    "cid": 190911273,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911274,
+    "score": 0.001,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "JOSM/1.5",
+    "comment": "Name ergänzt; #map_lt",
+    "prior": null
+   },
+   {
+    "cid": 190911275,
+    "score": 0.043,
+    "thr": 0.316,
+    "n": "75",
+    "editor": "iD",
+    "comment": "Ratchaburi",
+    "prior": null
+   },
+   {
+    "cid": 190911277,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "22",
+    "editor": "JOSM/1.5",
+    "comment": "Agregué edificios faltantes #Kaart 2026",
+    "prior": null
+   },
+   {
+    "cid": 190911278,
+    "score": 0.16,
+    "thr": 0.316,
+    "n": "13",
+    "editor": "iD",
+    "comment": "add missing geometries and road access #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911279,
+    "score": 0.015,
+    "thr": 0.316,
+    "n": "24",
+    "editor": "iD",
+    "comment": "Added missing roads according to Lyft-owned aerial imagery a",
+    "prior": null
+   },
+   {
+    "cid": 190911280,
+    "score": 0.007,
+    "thr": 0.316,
+    "n": "4",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911281,
+    "score": 0.005,
+    "thr": 0.316,
+    "n": "42",
+    "editor": "iD",
+    "comment": "added driveways",
+    "prior": null
+   },
+   {
+    "cid": 190911282,
+    "score": 0.029,
+    "thr": 0.316,
+    "n": "26",
+    "editor": "iD",
+    "comment": "Add missing apartments",
+    "prior": null
+   },
+   {
+    "cid": 190911283,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "JOSM/1.5",
+    "comment": "Rue Jules Lebrun - Jules Lebrunstraat : footway=crossing sur",
+    "prior": null
+   },
+   {
+    "cid": 190911284,
+    "score": 0.051,
+    "thr": 0.316,
+    "n": "6",
+    "editor": "iD",
+    "comment": "fix geometry #grabosm",
+    "prior": null
+   },
+   {
+    "cid": 190911285,
+    "score": 0.01,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "Rapid",
+    "comment": "#osmp Aktualizacja danych po imporcie UMP #maproulette mpr.l",
+    "prior": null
+   },
+   {
+    "cid": 190911286,
+    "score": 0.002,
+    "thr": 0.316,
+    "n": "78",
+    "editor": "JOSM/1.5",
+    "comment": "Addressen eingepflegt",
+    "prior": null
+   },
+   {
+    "cid": 190911287,
+    "score": 0.048,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "iD",
+    "comment": "地物の詳細設定",
+    "prior": null
+   },
+   {
+    "cid": 190911288,
+    "score": 0.006,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "iD",
+    "comment": "lamorlaye 3D suite 6",
+    "prior": null
+   },
+   {
+    "cid": 190911289,
+    "score": 0.003,
+    "thr": 0.316,
+    "n": "5",
+    "editor": "JOSM/1.5",
+    "comment": "#hotosm-project-65346 #myOSM #help-mm-mapped roads",
+    "prior": null
+   }
+  ]
+ },
+ "sandbox": {
+  "api": "master.apis.dev.openstreetmap.org",
+  "n": 16,
+  "flagged": 15,
+  "skipped_no_history": 14,
+  "rows": [
+   {
+    "cid": 708034,
+    "score": 0.15,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "OMaps",
+    "comment": "For test purposes only.",
+    "prior": null
+   },
+   {
+    "cid": 708033,
+    "score": 0.825,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "OMaps",
+    "comment": "For test purposes only (updated).",
+    "prior": null
+   },
+   {
+    "cid": 708032,
+    "score": 0.997,
+    "thr": 0.316,
+    "n": "7",
+    "editor": "iD",
+    "comment": "lake in india new",
+    "prior": null
+   },
+   {
+    "cid": 708031,
+    "score": 1.0,
+    "thr": 0.316,
+    "n": "9",
+    "editor": "iD",
+    "comment": "added park",
+    "prior": null
+   },
+   {
+    "cid": 708027,
+    "score": 0.566,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "clean up test",
+    "prior": null
+   },
+   {
+    "cid": 708026,
+    "score": 0.544,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "clean up test",
+    "prior": null
+   },
+   {
+    "cid": 708025,
+    "score": 0.779,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   },
+   {
+    "cid": 708024,
+    "score": 0.79,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   },
+   {
+    "cid": 708023,
+    "score": 0.799,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "-",
+    "comment": "test case",
+    "prior": null
+   },
+   {
+    "cid": 708017,
+    "score": 0.52,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "clean up test",
+    "prior": null
+   },
+   {
+    "cid": 708016,
+    "score": 0.774,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   },
+   {
+    "cid": 708015,
+    "score": 0.807,
+    "thr": 0.316,
+    "n": "2",
+    "editor": "-",
+    "comment": "test case",
+    "prior": null
+   },
+   {
+    "cid": 708014,
+    "score": 0.52,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "clean up test",
+    "prior": null
+   },
+   {
+    "cid": 708013,
+    "score": 0.774,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   },
+   {
+    "cid": 708007,
+    "score": 0.754,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   },
+   {
+    "cid": 708005,
+    "score": 0.758,
+    "thr": 0.316,
+    "n": "1",
+    "editor": "osmapi",
+    "comment": "test",
+    "prior": null
+   }
+  ]
+ }
+}
