@@ -42,7 +42,7 @@ Read the diagram left to right. Each column is a stage, with its code:
 | **changeset** | One upload of edits by one account, with a comment. This is the unit MapGuard scores. |
 | **revert** | A later changeset that undoes an earlier one. A revert by a *different* account within 90 days is the main "damaging" label. |
 | **OSMCha** | The community review tool. Reviewers mark changesets *harmful* or *good*. |
-| **Ovid** | The published model for this task (2021). Its labels are corpus A and its numbers are the baseline to beat. |
+| **Ovid** | The published model for this task (Tempelmeier & Demidova, WWW 2022). Its labels are corpus A and its numbers are the baseline to beat. |
 | **user-disjoint split (R1b)** | Train, validation and test share no author. Without this, a model can score well by recognising a few prolific vandals. R1a is the leaky random split, reported only for comparison. |
 | **PR-AUC** | Area under the precision–recall curve. 1.0 is perfect; on balanced data a random guess scores about 0.5. |
 | **one-per-author score** | PR-AUC counting only one changeset per author. It is a stricter check that the model has learnt behaviour, not identities. |
@@ -58,7 +58,7 @@ training. Each is the mean of 3 seeds. Each interval is a 95% bootstrap interval
 authors, not rows. Every number traces back to a file in
 [`experiments/rounds/`](experiments/rounds/).
 
-### Against Ovid (the published model for this task, 2021)
+### Against Ovid (the published model for this task, WWW 2022)
 
 Same benchmark labels (changesets later reverted, 2014–2019) and the same protocol
 (user-disjoint split, threshold chosen on validation):
@@ -69,9 +69,10 @@ Same benchmark labels (changesets later reverted, 2014–2019) and the same prot
 | **MapGuard (stack + embeddings)** | 0.801 | 0.856 | **0.828** [0.814, 0.840] | **0.823** [0.810, 0.835] |
 
 MapGuard is **+1.1 F1 and +0.9 accuracy points above Ovid**. Ovid's figure falls just inside our
-interval (P(ours higher) = 0.95). So this is a gain under the same protocol, not proof on an
-identical test set: the changesets were re-fetched, and edits that OSM has since hidden were
-dropped.
+interval (P(ours higher) = 0.946), so the margin over Ovid is **not conclusive at the 95% level**.
+It is also a comparison under the same protocol, not on an identical test set: the changesets
+were re-fetched, and edits that OSM has since hidden were dropped. Against our own tree baseline
+on the identical test set the gain is conclusive (next table).
 
 ### Every task (PR-AUC, the area under the precision–recall curve; 1.0 is perfect)
 
@@ -142,6 +143,12 @@ changeset ───────┤          + out-of-fold logistic scores of edi
 - **Stacking without leakage.** The deep model is trained on 5 author folds. Each training
   changeset gets its score from a fold model that never saw it. Validation and test rows get
   the mean of the fold models.
+- **How the deep model got here** (deep model alone, ovid PR-AUC; details in the round READMEs):
+  round 1, five branches with mean pooling, only tied XGBoost (0.844 vs 0.857) → round 2,
+  edit tokens and MIL pooling (0.866) → round 2b, a loss bug that had silently disabled author
+  weighting fixed (0.873) → round 2c, a residual connection that made the attention stop being
+  exactly uniform (0.882) → rounds 3–4, a second transformer block and sentence embeddings
+  (0.886), then stacked inside the trees (**0.906**).
 
 ### What did *not* help (measured, kept as negative results)
 
@@ -162,8 +169,8 @@ changeset ───────┤          + out-of-fold logistic scores of edi
   - most false alarms are newcomers adding real parks and footpaths. At least two look like
     vandalism that was never reverted.
 - **Over time.** Trained on 2014–19 and tested on 2021–26, the tree model holds (0.905). The
-  deepest neural variant drops more (0.874, one seed), so the combined models are the robust
-  choice.
+  deepest neural variant drops more (0.874, one seed). The combined models were not run on the
+  temporal splits, so which final system ages best is still open.
 - **Prevalence.** Real vandalism is well under 1% of edits. Every score above is on balanced
   data; the reports also give precision at realistic prevalence (1% and 0.1%).
 
@@ -181,13 +188,14 @@ changeset ───────┤          + out-of-fold logistic scores of edi
 | N | 2023 → 2026 | random changesets, presumed clean | 3,931 |
 
 Each changeset carries:
-- its edits, with the previous version recovered for 99%+ of modified objects;
+- its edits, with the previous version of edited objects (1.51 M recovered; about two thirds
+  of modify/delete edits have one, 1.2% were moderator-hidden);
 - the author's history from *before* that changeset only.
 
 User ids are pseudonymised (salted hash) in every released file, and usernames are removed.
 
 - **Download:** [GitHub releases](../../releases): the feature store, frozen splits and
-  dataset card.
+  dataset card (v1.1.0), side tables (v1.2.0), and the trained round-4 models (v1.3.0).
 - **Sources and coverage:** [docs/data/DATA_SOURCES.md](docs/data/DATA_SOURCES.md) and the
   [dataset card](docs/data/DATASET_CARD.md).
 - **Licence:** the data is a derivative of OpenStreetMap: **ODbL-1.0, © OpenStreetMap
@@ -280,7 +288,18 @@ stage also runs on a CPU, more slowly.
 
 Each changeset is drawn before/after on the OSM map, next to satellite imagery or Google Maps.
 The decision panel shows the score, the who/what/text evidence and the edit the deep model
-attended to. An `--offline` mode works with no network.
+attended to. An `--offline` mode works with no network. On Windows, double-click
+`visual\run.bat`; setup is in [`visual/README.md`](visual/README.md).
+
+- **Replayed changesets** (overview, scenarios, test set) show round 4's stored scores from
+  every model, including stack + embeddings.
+- **Live changesets** are scored by the hybrid trees, refit on the CPU with round 4's code,
+  split and seed (test PR-AUC within 0.005 of round 4's). The deep and stacked models need the
+  GPU-trained network, so they do not run live.
+- **On real traffic** the validation threshold flagged 22 of 146 recent OSM changesets (15%);
+  sandbox test edits score higher, because sandbox accounts have almost no history
+  ([`results/live_sample_2026-10-23.json`](results/live_sample_2026-10-23.json)). A flag means
+  "worth a reviewer's look", not proof of vandalism.
 
 ![Review console: a fake park](visual/screenshots/pokemon-park.png)
 
