@@ -64,7 +64,7 @@ visual/.venv/Scripts/python visual/precache_maps.py      # optional: ~200 maps f
 
 (On macOS/Linux use `visual/.venv/bin/python`.)
 
-**4. Start** and open http://127.0.0.1:8765:
+**4. Start.** On Windows, double-click `visualun.bat` (or run `visualun.bat`, or `visualun.bat --offline`). It starts the server with the Python behind `visual\.venv` and opens http://127.0.0.1:8765 for you. Anywhere else:
 
 ```bash
 visual/.venv/Scripts/python visual/server.py
