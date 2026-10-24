@@ -1,67 +1,105 @@
-# MapGuard on Altair (SVKM cluster)
+# Running a training round on a GPU machine
 
-One zip per training round. The job script unpacks it into its own round folder, runs every
-training step on the GPU, then the WHERE data job on the CPU, and writes logs, timings and one
-results zip for the round.
+The tools in this folder run a full training round on a remote Linux machine with a GPU: an HPC
+cluster, a cloud VM or a university server. Rounds 2–4 of this project ran this way (on an
+NVIDIA H100 slice of the Altair HPC cluster, hence the folder name), but nothing here depends
+on that cluster.
 
-## Build (laptop)
+One zip per round. You build it on your own machine, upload it, and start one job script. The
+script unpacks the zip into its own round folder, runs every step of the round's plan, and
+packs logs, timings and all results into one zip to download.
+
+## What the remote machine needs
+
+- Linux with `bash`, `unzip` and Python 3 (a TensorFlow 2.12+ image is easiest).
+- A GPU is optional. Every step also runs on a CPU, more slowly.
+- Internet access only if a plan installs extra packages (`install_st`) or runs the WHERE job.
+- A writable working folder, called `<BASE>` below.
+
+## 1. Build the zip (your machine)
 
 ```bash
-python altair/build_zip.py --round r3_v3_explore --plan altair/plans/r3_v3_explore.txt
+python altair/build_zip.py --round r4_seeds --plan altair/plans/r4_seeds.txt
 ```
 
-Writes `altair/_dist/mapguard_altair.zip` (git-ignored: it carries data, and
-`where_targets.parquet` holds raw OSM user ids for the WHERE job).
+This writes `altair/_dist/mapguard_altair.zip`: code, the feature store and the plan. It is
+git-ignored, because it carries data. `--data <dir>` picks a specific feature store.
 
-## Run (Jupyter terminal on the cluster)
+## 2. Start the job (on the remote machine)
 
-Upload the zip to `/data/mpstme-tanay/deepLearning_osm/`, then:
+Upload the zip into `<BASE>`, open a terminal there (SSH or a Jupyter terminal), and run:
 
 ```bash
-cd /data/mpstme-tanay/deepLearning_osm && unzip -o -j mapguard_altair.zip altair/run_round2.sh -d . && MAPGUARD_BASE="$(pwd)" setsid nohup bash run_round2.sh > launch.out 2>&1 < /dev/null &
+cd <BASE>
+unzip -o -j mapguard_altair.zip altair/run_round2.sh -d .
+MAPGUARD_BASE="$(pwd)" setsid nohup bash run_round2.sh > launch.out 2>&1 < /dev/null &
 ```
 
-The first command takes the job script out of the zip, so only the zip needs uploading.
-Close the browser tab afterwards; do not press Quit and do not stop the Jupyter job.
+The first command takes the job script out of the zip, so only the zip needs uploading. The
+second runs it in the background, detached from the terminal, so you can close the session.
+On a scheduler such as PBS or Slurm, put the same two lines in a job script instead.
 
-## Folder layout on the cluster
+`MAPGUARD_BASE` sets the working folder. Without it the script looks for a `deepLearning_osm`
+folder under `/data` or your home directory, then falls back to the current folder.
+
+## 3. Check progress
+
+```bash
+cat <BASE>/rounds/*/logs/STATUS <BASE>/where/STATUS 2>/dev/null
+```
+
+When `STATUS` says finished, download `<BASE>/rounds/<round>/<round>_results.zip` and extract
+it into `experiments/rounds/<round>/raw/`.
+
+## Folder layout on the remote machine
 
 ```
-deepLearning_osm/
+<BASE>/
   mapguard_altair.zip, run_round2.sh, launch.out
-  rounds/<round>/                 one per zip; the same zip again = resume
+  rounds/<round>/                 one per zip; running the same zip again resumes it
     app/                          code + data + experiments/runs
     logs/job.log  STATUS  timing.csv  env.txt  steps/<step>.log
-    <round>_results.zip           send this back
+    <round>_results.zip           download this
   where/                          WHERE job, shared by all rounds (done once)
     changesets-latest.osm.bz2     the planet changeset dump (~9 GB)
     author_points.npz             target authors' changeset locations
-    where_features.parquet        one row per changeset id - also inside the results zip
+    where_features.parquet        one row per changeset id; also in the results zip
     where.log  STATUS
 ```
 
-## Check progress
+## Plans: what a round runs
 
-```bash
-cd /data/mpstme-tanay/deepLearning_osm && cat rounds/*/logs/STATUS where/STATUS 2>/dev/null
-```
-
-## Steps = the round's plan
-
-Each zip carries `altair/PLAN.txt` (copied from `altair/plans/<round>.txt`), one step per line:
+Each zip carries `altair/PLAN.txt`, copied from `altair/plans/<round>.txt`, one step per line:
 
 ```
 name | flags | run_pipeline.py arguments
 ```
 
-flags: `fatal` (stop the job if it fails), `install_st` (install torch + sentence-transformers
-into `.pydeps_st2`, visible to that step only), `where` (run the WHERE job). Re-running the
-same zip skips finished steps. A round can only run once at a time: a second launch
-exits with "already running" (lock with PID + heartbeat in `rounds/<round>/.lock`). Plans so far:
+Flags:
+- `fatal`: stop the job if this step fails.
+- `install_st`: install torch and sentence-transformers for this step only.
+- `where`: run the WHERE data job instead of the pipeline.
 
-| Plan | What | Time (H100, 1 CPU core) |
+Behaviour:
+- Running the same zip again skips finished steps.
+- Only one copy of a round can run at a time. A second launch exits with "already running"
+  (a lock with PID and heartbeat in `rounds/<round>/.lock`).
+- `MAPGUARD_STEPS=a,b` limits a run to those step names.
+- Training results are packed into the results zip before the WHERE job starts, and again
+  at the end.
+
+| Plan | What it runs | Time (one H100 40 GB slice, 1 CPU core) |
 |---|---|---|
-| `r3_v3_explore.txt` | embeddings, smoke, v3 ablations (5 rows × 3 seeds), all six tasks with hybrid variants + stacking | ~2 h (ran 2026-10-12) |
-| `r4_seeds.txt` | embeddings (fixed env), smoke, ablations 4 rows × 3 seeds, all six tasks × 3 seeds, temporal | ~4.5–5 h |
+| `r3_v3_explore.txt` | embeddings, smoke test, v3 ablations (5 rows × 3 seeds), all six tasks with hybrid variants and stacking | ~2 h |
+| `r4_seeds.txt` | embeddings, smoke test, ablations (4 rows × 3 seeds), all six tasks × 3 seeds, temporal evaluation | ~3 h 45 min |
 
-Training results are packed into the results zip **before** WHERE starts, and again at the end.
+To run your own round, copy a plan, edit the steps, and build a zip with `--plan` pointing at it.
+
+## Files
+
+| File | Job |
+|---|---|
+| `build_zip.py` | pack code, feature store and plan into one zip |
+| `run_round2.sh` | the job script: unpack, run each plan step, log, pack results (used for every round since round 2, despite the name) |
+| `where_job.py` | the WHERE data job: author locations from the planet changeset dump |
+| `plans/` | the step plans of rounds 3 and 4 |
