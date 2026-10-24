@@ -23,9 +23,9 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LABELS = ROOT / "data" / "labels" / "ovid_labels.tsv"
-OUT = ROOT / "results" / "gate0b_fallback.json"
+OUT = ROOT / "results" / "gates" / "gate0b_fallback.json"
 
 OSM_API = "https://api.openstreetmap.org/api/0.6"
 BUCKET = "https://real-changesets.s3.us-west-2.amazonaws.com"

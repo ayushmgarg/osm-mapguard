@@ -23,7 +23,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from mapguard.config import LABELS, OVERPASS_RATE, RESULTS, DEFAULT_RATE
 from mapguard.data.http import PoliteSession
@@ -151,7 +151,7 @@ def main() -> int:
 
     summary["verdict"] = "PASS" if summary["geometry_yield"] >= 0.90 else "FAIL"
 
-    out = Path(args.out) if args.out else RESULTS / "gate1a_adiff_batch.json"
+    out = Path(args.out) if args.out else RESULTS / "gates" / "gate1a_adiff_batch.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 

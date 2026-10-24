@@ -41,7 +41,7 @@ desktop.ini
 data/mock/
 
 # cluster upload bundles - build artefacts, and some carry data
-cluster/_bundles/
+archive/cluster/_bundles/
 
 # experiment outputs
 experiments/checkpoints/

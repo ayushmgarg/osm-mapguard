@@ -27,7 +27,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from mapguard.config import CORPUS_A_META_DB, OVERPASS_RATE, RESULTS, data_path
 from mapguard.data.http import PoliteSession
@@ -142,7 +142,7 @@ def main() -> int:
         else "pick a mirror instance, or subset by changeset id (never by size or user)"
     )
 
-    out = RESULTS / "gate1b_overpass_capacity.json"
+    out = RESULTS / "gates" / "gate1b_overpass_capacity.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print("\n--- Gate 1b ---")
     print(json.dumps(summary, indent=2))

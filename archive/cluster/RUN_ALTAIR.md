@@ -18,7 +18,7 @@ Training rounds 2–4 did not use these notebooks. They used the zip, plan and j
 | Compute node | 2× Intel Xeon Gold 6438Y+, 32 cores, **512 GB RAM** |
 | GPU | NVIDIA **H100 80 GB**, partitioned by MIG into **4 slices of 40 GB** |
 | Master node | 2× Xeon Gold 5420+, 28 cores, 256 GB RAM |
-| Portal | Altair Access — `https://10.126.1.10:4443` |
+| Portal | Altair Access (the college's internal portal) |
 | Scheduler | Altair PBS Professional, queue `workq` |
 
 A 40 GB MIG slice is far more than this project needs. Stage 2 is a small model; the
@@ -27,7 +27,7 @@ slices belong to other people.
 
 ## Submitting a job
 
-1. **Portal** → `https://10.126.1.10:4443`, log in.
+1. **Portal** → open the Altair Access portal and log in.
 2. **Jobs → Actions → List Docker Images (hpccluster)**. Copy the image name you want:
    - `tensorflow_pbs:23.07-tf2-py3` — what we use
    - `pytorch_pbs:23.06-py3` — fallback only

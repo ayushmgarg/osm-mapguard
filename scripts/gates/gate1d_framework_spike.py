@@ -32,9 +32,9 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-RESULTS = Path(__file__).resolve().parents[1] / "results"
+RESULTS = Path(__file__).resolve().parents[2] / "results" / "gates"
 
 # Shapes mirror the real design (PROJECT_PLAN section 5.3), scaled down so the spike
 # runs on a CPU in under a minute.

@@ -318,11 +318,11 @@ train/                one folder per stage + run_pipeline.py; train/common/ is t
 scripts/              data harvesting, release packaging, result summaries, data-gate probes
 data/                 the Ovid label file (the one tracked dataset) and small test fixtures
 altair/               job script, bundle builder and step plans for the GPU training rounds
-cluster/              bundle.py + generated notebook wrappers for running stages on a notebook cluster
+archive/              unmaintained code kept for reference (the notebook-cluster wrappers)
 experiments/rounds/   every training round: raw outputs, analysis, a README with findings
 experiments/splits/   the frozen train/validation/test splits
-results/              data-gate measurements, early baselines, probes
-docs/                 architecture, model, data, running and planning documents
+results/              data-gate measurements (gates/), early baselines (early/), probes
+docs/                 architecture, model, data and running documents; archive/ holds the planning history
 visual/               the demo: local server, live OSM scoring, review console
 tests/                test suite
 ```

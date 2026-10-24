@@ -34,7 +34,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -191,7 +191,7 @@ def main() -> int:
         ),
     }
 
-    out = RESULTS / "gate1c_b0_tripwire.json"
+    out = RESULTS / "gates" / "gate1c_b0_tripwire.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print("\n--- Gate 1c ---")
     print(json.dumps(summary, indent=2))

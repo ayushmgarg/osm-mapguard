@@ -39,7 +39,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from mapguard.config import CORPUS_A_META_DB, LABELS, RESULTS, data_path
 from mapguard.data.osmcha import OSMCHA_API, count_for, iter_labels_windowed, session
@@ -167,7 +167,7 @@ def main() -> int:
         "decision": "PENDING - fill in after reading the table above",
     }
 
-    out = RESULTS / "gate2a_osmcha_coverage.json"
+    out = RESULTS / "gates" / "gate2a_osmcha_coverage.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print("\n--- totals ---")
     print(json.dumps(summary["totals"], indent=2))

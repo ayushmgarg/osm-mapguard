@@ -1,8 +1,8 @@
 #!/bin/bash
-# MapGuard on the SVKM Altair cluster - one training round per zip, plus the WHERE data job.
+# MapGuard on a GPU machine - one training round per zip, plus the WHERE data job.
 #
 # Start from a Jupyter terminal in the folder holding mapguard_altair.zip:
-#   cd /data/mpstme-tanay/deepLearning_osm
+#   cd <BASE>
 #   unzip -o -j mapguard_altair.zip altair/run_round2.sh -d .
 #   MAPGUARD_BASE="$(pwd)" setsid nohup bash run_round2.sh > launch.out 2>&1 < /dev/null &
 #
@@ -37,7 +37,7 @@ JOB_ID="${PBS_JOBID:-local}"; JOB_ID="${JOB_ID%%.*}"
 # ---------------------------------------------------------------- 1. where to work
 find_base() {
     if [ -n "${MAPGUARD_BASE:-}" ]; then echo "$MAPGUARD_BASE"; return; fi
-    for d in /data/mpstme-tanay/deepLearning_osm /data/*/deepLearning_osm \
+    for d in /data/*/deepLearning_osm \
              /data/*/*/deepLearning_osm "$HOME/deepLearning_osm"; do
         if [ -d "$d" ] && [ -w "$d" ]; then echo "$d"; return; fi
     done

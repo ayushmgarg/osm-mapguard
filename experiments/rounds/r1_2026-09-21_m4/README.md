@@ -63,4 +63,4 @@ Weights (`*.h5`, 64 MB) are git-ignored and stay local.
 
 ## Next plan - proposed, not started
 
-See the bottom of `docs/planning/CHECKLIST_v2.md`.
+See the bottom of `docs/archive/CHECKLIST_v2.md`.

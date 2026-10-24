@@ -59,7 +59,7 @@ inference path as the research results".
   aren't in the repo.
 
 The weights exist on the Altair cluster, in
-`/data/mpstme-tanay/deepLearning_osm/rounds/r4_2026-10-13_altair_h100_seeds/app/experiments/runs/`.
+`<BASE>/rounds/r4_2026-10-13_altair_h100_seeds/app/experiments/runs/`.
 You need the `stage2_supervised/*_ovid_R1b_s2026090*` folders, plus `stack/` and `baselines/`.
 Each folder holds `model.weights.h5`, `model_config.json` and `normaliser.json`.
 

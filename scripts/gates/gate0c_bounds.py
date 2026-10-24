@@ -22,8 +22,8 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "results" / "gate0c_bounds.json"
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "results" / "gates" / "gate0c_bounds.json"
 
 OSM_API = "https://api.openstreetmap.org/api/0.6"
 BUCKET = "https://real-changesets.s3.us-west-2.amazonaws.com"
